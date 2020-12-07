@@ -39,6 +39,13 @@ class Object(IObject):
                 return g
 
     @classmethod
+    def get_by_id(cls, _id):
+        gen = Object.all()
+        for g in gen:
+            if g._id == _id:
+                return g
+
+    @classmethod
     def remove(cls):
         Object.objects.pop()
 
