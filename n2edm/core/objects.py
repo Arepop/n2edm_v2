@@ -39,6 +39,7 @@ class Object(IObject):
                 return g
 
     @classmethod
+<<<<<<< HEAD
     def filter(cls, *args, **kwargs):
         for arg, value in kwargs.items():
             if not hasattr(cls, arg):
@@ -47,6 +48,13 @@ class Object(IObject):
                 prop = getattr(cls, arg)
                 if value == prop.fget(obj):
                     yield obj
+=======
+    def get_by_id(cls, _id):
+        gen = Object.all()
+        for g in gen:
+            if g._id == _id:
+                return g
+>>>>>>> d45f9896aa3c0eb5aceef1a56c9514f7ef58c9e1
 
     @classmethod
     def remove(cls):
