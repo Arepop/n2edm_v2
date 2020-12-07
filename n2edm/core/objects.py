@@ -1,5 +1,6 @@
 from ..abstract.objects import *
 
+
 class Object(IObject):
 
     objects = []
@@ -59,37 +60,43 @@ class Object(IObject):
                 prop = getattr(cls, arg)
                 if value == prop.fget(obj):
                     yield obj
-        
+
         raise IndexError(f"Object of class '{cls}' not found")
 
-    
     @classmethod
     def delete(cls, id):
         obj = cls.get(id_=id)
         return cls.objects.pop(cls.objects.index(obj))
 
+    @classmethod
+    def update(cls, obj, *args, **kwargs):
+        for arg, value in kwargs.items():
+            if not hasattr(cls, arg):
+                raise TypeError(f"'{cls} attribute': '{arg}'' does not exist!")
+            setattr(obj, arg, value)
+        return obj
+
 
 class GroupObject(Object, IGroupObject):
-    
     def __init__(self, name):
         super().__init__(name)
+
 
 class ActionObject(Object, IActionObject):
-    
     def __init__(self, name):
         super().__init__(name)
+
 
 class ActorObject(Object, IActorObject):
-    
     def __init__(self, name):
         super().__init__(name)
+
 
 class TimelineObject(Object, ITimelineObject):
-    
     def __init__(self, name):
         super().__init__(name)
 
+
 class InfinitActorObject(Object, IInfinitActorObject):
-    
     def __init__(self, name):
         super().__init__(name)
