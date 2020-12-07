@@ -6,7 +6,7 @@ class Object(IObject):
     objects = []
 
     def __init__(self, name):
-        self._name = name
+        self.name = name
 
     @property
     def name(self):
@@ -18,13 +18,13 @@ class Object(IObject):
 
     @classmethod
     def create(cls, name):
-        obj = Object(name)
+        obj = cls(name)
         obj._id = id(obj)
-        Object.objects.append(obj)
+        cls.objects.append(obj)
 
     @classmethod
     def all(cls):
-        for obj in Object.objects:
+        for obj in cls.objects:
             yield obj
 
     @classmethod
@@ -33,15 +33,25 @@ class Object(IObject):
 
     @classmethod
     def get(cls, name):
-        gen = Object.all()
+        gen = cls.all()
         for g in gen:
             if g.name == name:
                 return g
 
     @classmethod
+    def filter(cls, *args, **kwargs):
+        for arg, value in kwargs.items():
+            if not hasattr(cls, arg):
+                return TypeError(f"'{cls} attribute': '{arg}'' does not exist!")
+            for obj in cls.all():
+                prop = getattr(cls, arg)
+                if value == prop.fget(obj):
+                    yield obj
+
+    @classmethod
     def remove(cls):
-        Object.objects.pop()
+        cls.objects.pop()
 
 
-class Group(IGroupObject):
+class Group(Object, IGroupObject):
     pass
