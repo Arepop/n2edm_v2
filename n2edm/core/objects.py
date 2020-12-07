@@ -23,6 +23,12 @@ class Object(IObject):
         Object.objects.append(obj)
 
     @classmethod
+    def all(cls):
+        for obj in Object.objects:
+            yield obj
+
+
+    @classmethod
     def get_id(cls,obj):
         return obj._id
 
