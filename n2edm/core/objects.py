@@ -5,10 +5,10 @@ class Object(IObject):
 
     objects = []
 
-    def __init__(self, *args, **kwargs):            
+    def __init__(self, *args, **kwargs):
         self.name = None
         self.id_ = None
-        
+
         for arg, value in kwargs.items():
             pass
 
@@ -91,10 +91,15 @@ class GroupObject(Object, IGroupObject):
     def children(self):
         return ActionObject.filter(group=self)
 
+
 class ActionObject(Object, IActionObject):
     def __init__(self, name, group):
+        self.group = None
         super().__init__(name)
-        self.group = group
+
+    @property
+    def children(self):
+        return ActorObject.filter(action=self)
 
     @property
     def group(self):
@@ -103,12 +108,30 @@ class ActionObject(Object, IActionObject):
     @group.setter
     def group(self, group):
         self._group = group
-        
 
 
 class ActorObject(Object, IActorObject):
     def __init__(self, name):
+        # group
+        self.group = None
+        self.action = None
         super().__init__(name)
+
+    @property
+    def group(self):
+        return self._group
+
+    @group.setter
+    def group(self, group):
+        self._group = group
+
+    @property
+    def action(self):
+        return self._action
+
+    @action.setter
+    def action(self, action):
+        self._action = action
 
 
 class TimelineObject(Object, ITimelineObject):
