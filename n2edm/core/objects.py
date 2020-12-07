@@ -27,14 +27,21 @@ class Object(IObject):
         for obj in Object.objects:
             yield obj
 
+    @classmethod
+    def get_id(cls, obj):
+        return obj._id
 
     @classmethod
-    def get_id(cls,obj):
-        return obj._id
+    def get(cls, name):
+        gen = Object.all()
+        for g in gen:
+            if g.name == name:
+                return g
 
     @classmethod
     def remove(cls):
         Object.objects.pop()
+
 
 class Group(IGroupObject):
     pass
