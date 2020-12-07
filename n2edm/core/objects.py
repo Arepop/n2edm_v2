@@ -8,9 +8,9 @@ class Object(IObject):
     def __init__(self, *args, **kwargs):            
         self.name = None
         self.id_ = None
-        
         for arg, value in kwargs.items():
-            pass
+            if hasattr(self, arg):
+                setattr(self, arg, value)
 
     @property
     def id_(self):
@@ -30,10 +30,7 @@ class Object(IObject):
 
     @classmethod
     def create(cls, *args, **kwargs):
-        for arg, value in kwargs.items():
-            if not hasattr(cls, arg):
-                raise AttributeError(f"'{cls} attribute': '{arg}' does not exist!")
-        obj = cls(args, kwargs)
+        obj = cls(*args, **kwargs)
         obj.id_ = id(obj)
         cls.objects.append(obj)
         return obj
@@ -55,20 +52,19 @@ class Object(IObject):
                 prop = getattr(cls, arg)
                 if value == prop.fget(obj):
                     return obj
+
         raise IndexError(f"Object of class '{cls}' not found")
 
     @classmethod
     def filter(cls, *args, **kwargs):
         for arg, value in kwargs.items():
-            if not hasattr(cls, arg):
+            if not hasattr(cls, str(arg)):
                 raise TypeError(f"'{cls} attribute': '{arg}'' does not exist!")
             for obj in cls.all():
                 prop = getattr(cls, arg)
                 if value == prop.fget(obj):
                     yield obj
-
-        raise IndexError(f"Object of class '{cls}' not found")
-
+           
     @classmethod
     def delete(cls, id):
         obj = cls.get(id_=id)
@@ -84,17 +80,17 @@ class Object(IObject):
 
 
 class GroupObject(Object, IGroupObject):
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     @property
     def children(self):
         return ActionObject.filter(group=self)
 
 class ActionObject(Object, IActionObject):
-    def __init__(self, name, group):
-        super().__init__(name)
-        self.group = group
+    def __init__(self, *args, **kwargs):
+        self.group = None
+        super().__init__(*args, **kwargs)
 
     @property
     def group(self):
@@ -103,7 +99,6 @@ class ActionObject(Object, IActionObject):
     @group.setter
     def group(self, group):
         self._group = group
-        
 
 
 class ActorObject(Object, IActorObject):
