@@ -5,9 +5,12 @@ class Object(IObject):
 
     objects = []
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, *args, **kwargs):            
+        self.name = None
         self.id_ = None
+        
+        for arg, value in kwargs.items():
+            pass
 
     @property
     def id_(self):
@@ -26,8 +29,11 @@ class Object(IObject):
         self._name = name
 
     @classmethod
-    def create(cls, name):
-        obj = cls(name)
+    def create(cls, *args, **kwargs):
+        for arg, value in kwargs.items():
+            if not hasattr(cls, arg):
+                raise AttributeError(f"'{cls} attribute': '{arg}' does not exist!")
+        obj = cls(args, kwargs)
         obj.id_ = id(obj)
         cls.objects.append(obj)
         return obj
@@ -44,7 +50,7 @@ class Object(IObject):
     def get(cls, *args, **kwargs):
         for arg, value in kwargs.items():
             if not hasattr(cls, arg):
-                return AttributeError(f"'{cls} attribute': '{arg}' does not exist!")
+                raise AttributeError(f"'{cls} attribute': '{arg}' does not exist!")
             for obj in cls.all():
                 prop = getattr(cls, arg)
                 if value == prop.fget(obj):
@@ -81,10 +87,23 @@ class GroupObject(Object, IGroupObject):
     def __init__(self, name):
         super().__init__(name)
 
+    @property
+    def children(self):
+        return ActionObject.filter(group=self)
 
 class ActionObject(Object, IActionObject):
-    def __init__(self, name):
+    def __init__(self, name, group):
         super().__init__(name)
+        self.group = group
+
+    @property
+    def group(self):
+        return self._group
+
+    @group.setter
+    def group(self, group):
+        self._group = group
+        
 
 
 class ActorObject(Object, IActorObject):
