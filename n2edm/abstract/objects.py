@@ -13,7 +13,7 @@ class IObject(ABC):
         raise NotImplementedError("You need to implement 'name' property setter!")
 
     @abstractclassmethod
-    def remove(cls):
+    def delete(cls):
         raise NotImplementedError("You need to implement 'remove' method!")
         
     @abstractclassmethod
