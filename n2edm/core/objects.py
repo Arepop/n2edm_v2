@@ -18,9 +18,13 @@ class Object(IObject):
 
     @classmethod
     def create(cls, name):
-        object = Object(name)
-        object._id = 
-        Object.objects.append(object)
+        obj = Object(name)
+        obj._id = id(obj)
+        Object.objects.append(obj)
+
+    @classmethod
+    def get_id(cls,obj):
+        return obj._id
 
     @classmethod
     def remove(cls):
