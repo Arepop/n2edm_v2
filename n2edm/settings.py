@@ -13,11 +13,11 @@ DATABASES = {
 }
 
 INSTALLED_APPS = (
-    'n2edm.watcher',
-    'n2edm.scheduler',
-    'n2edm.core',
     'n2edm.models',
-    'n2edm.abstract'
+    # 'n2edm.watcher',
+    # 'n2edm.scheduler',
+    # 'n2edm.core',
+    # 'n2edm.abstract'
 )
 
 # SECURITY WARNING: Modify this secret key if using in production!

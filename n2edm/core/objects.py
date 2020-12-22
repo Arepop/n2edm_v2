@@ -1,13 +1,19 @@
 from ..abstract.objects import *
-
+from ..models.models import Group, Action
 
 class Object(IObject):
 
+    model = None
+    set_id = None
     objects = []
 
     def __init__(self, *args, **kwargs):
         self.name = None
         self.id_ = None
+        Object.set_id = kwargs.get("set_id", id(Object))
+
+        if args:
+            self.name, = args
         for arg, value in kwargs.items():
             if hasattr(self, arg):
                 setattr(self, arg, value)
@@ -31,17 +37,13 @@ class Object(IObject):
     @classmethod
     def create(cls, *args, **kwargs):
         obj = cls(*args, **kwargs)
-        obj.id_ = id(obj)
+        obj.id_ = kwargs.get("id_", id(obj))
         cls.objects.append(obj)
         return obj
 
     @classmethod
     def all(cls):
-        if not cls.objects:
-            raise IndexError(f"Empty list! First you need to create any object!")
-        for obj in cls.objects:
-            if isinstance(obj, cls):
-                yield obj
+        return (obj for obj in cls.objects if isinstance(obj, cls))
 
     @classmethod
     def get(cls, *args, **kwargs):
@@ -80,17 +82,34 @@ class Object(IObject):
 
 
 class GroupObject(Object, IGroupObject):
+
+    model = Group
+
     def __init__(self, *args, **kwargs):
+        self._check_unique(kwargs.get('name'), kwargs.get('set_id'))
         super().__init__(*args, **kwargs)
 
     @property
     def children(self):
         return ActionObject.filter(group=self)
 
+    def _check_unique(self, name, set_id):
+        names = [(group.name, group.set_id) for group in GroupObject.all()]
+        if name in names:
+            raise NameError("GroupObject with that name alredy exist in that set. Choose different name")
+        
+    def save(self):
+        db_item = self.model.objects.create(set_id=self.set_id, name=self.name)
+        db_item.save()
+        self.id_ = db_item.id
 
 class ActionObject(Object, IActionObject):
+
+    model = Action
+
     def __init__(self, *args, **kwargs):
         self.group = None
+        self.set = None
         super().__init__(*args, **kwargs)
 
     @property
@@ -104,7 +123,6 @@ class ActionObject(Object, IActionObject):
     @group.setter
     def group(self, group):
         self._group = group
-
 
 class ActorObject(Object, IActorObject):
     def __init__(self,  *args, **kwargs):
