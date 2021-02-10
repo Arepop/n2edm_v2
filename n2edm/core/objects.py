@@ -45,8 +45,6 @@ class Object(IObject):
     def create(cls, *args, **kwargs):
         obj = cls(*args, **kwargs)
         cls.objects.append(obj)
-        temp = cls.model.objects.create(**kwargs)
-        obj.pk = temp.id
         return obj
 
     @classmethod
@@ -78,7 +76,6 @@ class Object(IObject):
     @classmethod
     def delete(cls, id):
         obj = cls.get(pk=id)
-        cls.model.objects.delete(pk=obj.pk)
         return cls.objects.pop(cls.objects.index(obj))
 
     @classmethod
@@ -87,7 +84,6 @@ class Object(IObject):
             if not hasattr(cls, arg):
                 raise TypeError(f"'{cls} attribute': '{arg}'' does not exist!")
             setattr(obj, arg, value)
-        cls.model.objects.filter(pk=obj.pk).update(**kwargs)
         return obj
 
 
@@ -96,24 +92,17 @@ class GroupObject(Object, IGroupObject):
     model = Group
 
     def __init__(self, *args, **kwargs):
-        self._check_unique(kwargs.get("name"), kwargs.get("set_id"))
+        self.position = None
         super().__init__(*args, **kwargs)
 
     @property
     def children(self):
         return ActionObject.filter(group=self)
 
-    def _check_unique(self, name, set_id):
-        names = [(group.name, group.set_id) for group in GroupObject.all()]
-        if name in names:
-            raise NameError(
-                "GroupObject with that name alredy exist in that set. Choose different name"
-            )
-
-    def save(self):
-        db_item = self.model.objects.create(set_id=self.set_id, name=self.name)
-        db_item.save()
-        self.pk = db_item.id
+    # def save(self):
+    #     db_item = self.model.objects.create(set_id=self.set_id, name=self.name)
+    #     db_item.save()
+    #     self.pk = db_item.id
 
 
 class ActionObject(Object, IActionObject):
