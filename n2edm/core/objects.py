@@ -1,6 +1,5 @@
 from ..abstract.objects import *
-from ..models.models import Group, Action
-
+from ..models.models import *
 
 class Object(IObject):
 
@@ -11,6 +10,7 @@ class Object(IObject):
     def __init__(self, *args, **kwargs):
         self.name = None
         self.pk = None
+        self.state = None
         Object.set_id = kwargs.get("set_id", id(Object))
 
         if args:
@@ -34,6 +34,14 @@ class Object(IObject):
         self._pk = new_id
 
     @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, state):
+        self._state = state
+
+    @property
     def name(self):
         return self._name
 
@@ -45,6 +53,7 @@ class Object(IObject):
     def create(cls, *args, **kwargs):
         obj = cls(*args, **kwargs)
         cls.objects.append(obj)
+        obj.state = "to_create"
         return obj
 
     @classmethod
@@ -70,12 +79,23 @@ class Object(IObject):
                 raise TypeError(f"'{cls} attribute': '{arg}'' does not exist!")
             for obj in cls.all():
                 prop = getattr(cls, arg)
-                if value == prop.fget(obj):
+                if not isinstance(prop, property):
+                    if value == prop:
+                        yield obj
+                elif value == prop.fget(obj):
                     yield obj
+
+    @classmethod
+    def delete(cls, id, mark=False):
+        obj = cls.get(pk=id)
+        obj.state = "to_delete"
+        if mark:
+            return cls.objects.pop(cls.objects.index(obj))
 
     @classmethod
     def delete(cls, id):
         obj = cls.get(pk=id)
+        obj.state = "to_delete"
         return cls.objects.pop(cls.objects.index(obj))
 
     @classmethod
@@ -84,6 +104,7 @@ class Object(IObject):
             if not hasattr(cls, arg):
                 raise TypeError(f"'{cls} attribute': '{arg}'' does not exist!")
             setattr(obj, arg, value)
+        obj.state = "to_update"
         return obj
 
 
@@ -173,6 +194,9 @@ class ActionObject(Object, IActionObject):
 
 
 class ActorObject(Object, IActorObject):
+
+    model = Actor
+
     def __init__(self, *args, **kwargs):
         self.group = None
         self.action = None

@@ -20,14 +20,15 @@ class Handler(IHandler):
 
 class GroupHandler(Handler, IGroupHandler):
 
-    pass
+    object_ = Group
 
 
 class ActionHandler(Handler, IActionHandler):
 
-    pass
+    object_ = Action
+
 
 
 class ActorHandler(Handler, IActorHandler):
 
-    pass
+    object_ = Actor
