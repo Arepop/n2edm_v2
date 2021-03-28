@@ -1,18 +1,14 @@
 import sys
 import os
-import django
+from .impl.widgets.base import Base
 
+from PyQt5 import QtWidgets
 
 def main():
-    sys.dont_write_bytecode = True
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "n2edm.settings")
-    django.setup()
-
-    from ..core.objects import GroupObject, ActionObject
-
-    for obj in GroupObject.model.objects.all():
-        print(vars(obj))
-
+    app = QtWidgets.QApplication(sys.argv)
+    GUI = Base()
+    GUI.show()
+    sys.exit(app.exec_())
 
 if __name__ == "__main__":
     main()
