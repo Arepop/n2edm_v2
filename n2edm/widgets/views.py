@@ -1,9 +1,9 @@
+from typing import Any
+
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from ..abstract.views import *
 
-
-class BaseView(QtWidgets.QMainWindow, QtWidgets.QWidget, IBaseView):
+class BaseView(QtWidgets.QMainWindow, QtWidgets.QWidget):
     """BaseView class
     """
     def __init__(self):
@@ -58,76 +58,28 @@ class BaseView(QtWidgets.QMainWindow, QtWidgets.QWidget, IBaseView):
         self.actions_menu.addAction(self.add_action)
         self.actions_menu.addAction(self.add_timeline)
 
-class SchedulerView(QtWidgets.QWidget, ISchedulerView):
+class SchedulerView(QtWidgets.QWidget):
     def __init__(self, parent: Any) -> None:
         super().__init__(parent=parent)
-        self.create_canvas()
-        self.set_canvas_attributes(100)
-        self.set_canvas_labels()
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+        
 
-    def create_canvas(self) -> None:
-        """Create matplotlib canvas and tollbar
-        """
-        main_layout = QtWidgets.QVBoxLayout(self)
-
-        self.figure, self.ax = plt.subplots()
-
-        self.canvas = FigureCanvas(self.figure)
-        main_layout.addWidget(self.canvas)
-
-        self.toolbar = NavigationToolbar(self.canvas, self)
-        main_layout.addWidget(self.toolbar)
-
-    def update_canvas(self):
-        for actor in ActorObject.all():
-            self.canvas.draw()
-
-    def set_canvas_attributes(self, Y_MAX) -> None:
-        """Sets canvas attributes
-        """
-        bbox = self.ax.get_window_extent().transformed(
-            self.figure.dpi_scale_trans.inverted())
-        WIDTH = 2 * bbox.height
-
-        mpl.rcParams["lines.solid_capstyle"] = "butt"
-        self.ax.grid(True)
-        self.ax.set_xbound(0)
-        self.ax.set_ylim(25, -1)
-        self.ax.set_xlim(-1, 200)
-        plt.yticks(range(-2, 25))
-        self.set_canvas_labels()
-
-    def set_canvas_labels(self) -> None:
-        self.ax.set_yticklabels(["", "Timeline"]+[""]*25)
-        self.figure.tight_layout()
-        self.canvas.draw()
-
-class SearchBarView(QtWidgets.QLineEdit, ISearchBarView):
+class SearchBarView(QtWidgets.QLineEdit):
     """Constructor for overwritten QLineEdit
 
     Args:
         QtWidgets (QWidget): QLineEdit
     """
-
-    search_sig = QtCore.Signal(str)
-
     def __init__(self, parent):
         super().__init__(parent)
 
-    def keyPressEvent(self, event: QtCore.QEvent) -> None:
-        """Send string as signal to tree_view to search signals in tree_view
 
-        Args:
-            event (QEvent): Pressed key event
-        """
-        super().keyPressEvent(event)
-        if event.key():
-            self.search_sig.emit(self.text())
-
-class TreeView(QtWidgets.QWidget, ITreeView)
+class TreeView(QtWidgets.QTreeView):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent=parent)
+
 
 class ActionsView(QtWidgets.QWidget):
     def __init__(self, parent) -> None:
         super().__init__(parent=parent)
+        self.main_layout = QtWidgets.QVBoxLayout(self)
