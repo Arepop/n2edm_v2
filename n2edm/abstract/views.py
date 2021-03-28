@@ -4,10 +4,10 @@ from abc import ABC, abstractmethod, abstractclassmethod
 class IBaseView(ABC):
     pass
 
-class IScheduleView(IBaseView):
+class ISchedulerView(IBaseView):
     pass
 
-class ITreeView(IBaseView):
+class IActionsView(IBaseView):
     pass
 
 class IWatcherView(IBaseView):
@@ -19,8 +19,8 @@ class ICycleView(IBaseView):
 class IToolbarView(IBaseView):
     pass
 
-class IMenuView(IBaseView):
+class ISearchBarView(IBaseView):
     pass
 
-class ISearchBarView(IBaseView):
+class ITreeView(IBaseView):
     pass

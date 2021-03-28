@@ -16,7 +16,7 @@ class Action(models.Model):
     name = models.TextField()
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     start_cmd = models.TextField()
-    stop_cmd = models.TextField()
+    stop_cmd = models.TextField(null=True)
     duration = models.IntegerField()
     params = models.TextField()
     color = models.TextField()

@@ -19,7 +19,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    install_requires=["pyqt5 <= 5.12",
+    install_requires=["pyqt5 <= 5.13",
                       "matplotlib",
                       "libconf",
                       "django"],
