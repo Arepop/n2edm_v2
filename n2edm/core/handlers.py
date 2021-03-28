@@ -10,13 +10,14 @@ class Handler(IHandler):
         self.no_object = 0
 
     @classmethod
-    def check_unique(cls, name):
-
-        for obj in cls.object_.all():
-            if name == obj.name:
+    def check_unique(cls, obj):
+        for other_obj in cls.object_.all():
+            if obj.name == other_obj.name and obj != other_obj:
                 raise NameError(
                     "Object with that name alredy exist in that set. Choose different name"
                 )
+
+        return True
 
 
 class GroupHandler(Handler, IGroupHandler):
@@ -24,7 +25,7 @@ class GroupHandler(Handler, IGroupHandler):
 
 
 class ActionHandler(Handler, IActionHandler):
-    pass
+    object_ = ActionObject
 
 class ActorHandler(Handler, IActorHandler):
 

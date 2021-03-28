@@ -1,6 +1,6 @@
 from ..abstract.objects import *
-from ..models.models import Group, Action
-
+from ..models.models import *
+from copy import copy
 
 class Object(IObject):
 
@@ -11,7 +11,9 @@ class Object(IObject):
     def __init__(self, *args, **kwargs):
         self.name = None
         self.pk = None
+        self.state = None
         Object.set_id = kwargs.get("set_id", id(Object))
+
 
         if args:
             (self.name,) = args
@@ -34,6 +36,14 @@ class Object(IObject):
         self._pk = new_id
 
     @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, state):
+        self._state = state
+
+    @property
     def name(self):
         return self._name
 
@@ -44,8 +54,13 @@ class Object(IObject):
     @classmethod
     def create(cls, *args, **kwargs):
         obj = cls(*args, **kwargs)
-        cls.objects.append(obj)
-        return obj
+        obj.state = "to_create"
+        yield obj
+        check = yield
+        if check:
+            cls.objects.append(obj)        
+        yield obj
+        
 
     @classmethod
     def all(cls):
@@ -58,7 +73,10 @@ class Object(IObject):
                 raise AttributeError(f"'{cls} attribute': '{arg}' does not exist!")
             for obj in cls.all():
                 prop = getattr(cls, arg)
-                if value == prop.fget(obj):
+                if not isinstance(prop, property):
+                    if value == prop:
+                        return obj
+                elif value == prop.fget(obj):
                     return obj
 
         raise IndexError(f"Object of class '{cls}' not found")
@@ -70,13 +88,19 @@ class Object(IObject):
                 raise TypeError(f"'{cls} attribute': '{arg}'' does not exist!")
             for obj in cls.all():
                 prop = getattr(cls, arg)
-                if value == prop.fget(obj):
+                if not isinstance(prop, property):
+                    if value == prop:
+                        yield obj
+                elif value == prop.fget(obj):
                     yield obj
 
     @classmethod
-    def delete(cls, id):
+    def delete(cls, id, mark=False):
+        #TODO: Cascade deletion for GroupObject and ActionObject
         obj = cls.get(pk=id)
-        return cls.objects.pop(cls.objects.index(obj))
+        obj.state = "to_delete"
+        if mark:
+            return cls.objects.pop(cls.objects.index(obj))
 
     @classmethod
     def update(cls, obj, *args, **kwargs):
@@ -84,6 +108,8 @@ class Object(IObject):
             if not hasattr(cls, arg):
                 raise TypeError(f"'{cls} attribute': '{arg}'' does not exist!")
             setattr(obj, arg, value)
+        obj.state = "to_update"
+        self.stack.append(copy(self.objects))
         return obj
 
 
@@ -99,10 +125,13 @@ class GroupObject(Object, IGroupObject):
     def children(self):
         return ActionObject.filter(group=self)
 
-    # def save(self):
-    #     db_item = self.model.objects.create(set_id=self.set_id, name=self.name)
-    #     db_item.save()
-    #     self.pk = db_item.id
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, position):
+        self._position = position
 
 
 class ActionObject(Object, IActionObject):
@@ -111,7 +140,6 @@ class ActionObject(Object, IActionObject):
 
     def __init__(self, *args, **kwargs):
         self.group = None
-        self.set = None
         self.start_cmd = None
         self.stop_cmd = None
         self.duration = None
@@ -173,6 +201,9 @@ class ActionObject(Object, IActionObject):
 
 
 class ActorObject(Object, IActorObject):
+
+    model = Actor
+
     def __init__(self, *args, **kwargs):
         self.group = None
         self.action = None

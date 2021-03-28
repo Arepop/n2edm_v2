@@ -14,7 +14,7 @@ class Action(models.Model):
 
     set_id = models.TextField()
     name = models.TextField()
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True)
     start_cmd = models.TextField()
     stop_cmd = models.TextField(null=True)
     duration = models.IntegerField()
@@ -27,7 +27,7 @@ class Actor(models.Model):
 
     set_id = models.TextField()
     name = models.TextField()
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True)
     action = models.ForeignKey(Action, on_delete=models.CASCADE)
     params = models.TextField()
     color = models.TextField()

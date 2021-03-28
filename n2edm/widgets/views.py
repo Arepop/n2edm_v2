@@ -50,12 +50,12 @@ class BaseView(QtWidgets.QMainWindow, QtWidgets.QWidget):
         self.edit_menu.addAction(self.undo_action)
         self.edit_menu.addAction(self.redo_action)
 
-        self.add_action = QtWidgets.QAction("Add Action...")
+        self.create_action = QtWidgets.QAction("Add Action...")
 
         self.add_timeline = QtWidgets.QAction("Add Timeline...")
 
         self.actions_menu = main_menu.addMenu("Actions")
-        self.actions_menu.addAction(self.add_action)
+        self.actions_menu.addAction(self.create_action)
         self.actions_menu.addAction(self.add_timeline)
 
 class SchedulerView(QtWidgets.QWidget):

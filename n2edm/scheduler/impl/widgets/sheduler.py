@@ -1,10 +1,19 @@
+import sys
+import os
+import django
 from typing import Any
-from ....widgets.views import SchedulerView
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patheffects as mpe
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+
+sys.dont_write_bytecode = True
+os.environ["DJANGO_SETTINGS_MODULE"] = "n2edm.settings"
+django.setup()
+
+from ....widgets.views import SchedulerView
+from ....core.objects import GroupObject, ActorObject, ActorObject, TimelineObject, InfinitActorObject
 
 
 class Scheduler(SchedulerView):

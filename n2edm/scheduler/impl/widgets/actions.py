@@ -2,6 +2,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal as Signal
 
 from ....widgets.views import ActionsView, TreeView, SearchBarView
+from ....core.objects import GroupObject, ActionObject, TimelineObject, InfinitActorObject
+from ....widgets.dialogs import ActionDialog
+from ....core.handlers import ActionHandler
 
 
 class Actions(ActionsView):
@@ -28,6 +31,7 @@ class Tree(TreeView):
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.create_view()
+        self.action_handler = ActionHandler()
 
     def create_view(self):
         self.model = StandardItemModel(self)
@@ -48,6 +52,22 @@ class Tree(TreeView):
             search_str (str): Name of signal to seach
         """
         self.proxy_model.setFilterRegExp(search_str)
+
+    def open_action_creation_dialog(self):
+        action_dialog = ActionDialog(self)
+        action_dialog.SIG_create_action.connect(self.create_action)
+        action_dialog.exec()
+
+    def create_action(self, attributes):
+        action = ActionObject.create(**attributes)
+        obj = next(action)
+        try:
+            can_create = self.action_handler.check_unique(obj)
+        except NameError:
+            can_create = False
+        next(action)
+        obj = action.send(can_create)
+        self.model.populate()
 
 class SearchBar(SearchBarView):
     search_sig = Signal(str)
@@ -76,15 +96,12 @@ class StandardItemModel(QtGui.QStandardItemModel):
         self.groups (dict): dictionary with groups
 
     """
-
-    update_actions_sig = QtCore.pyqtSignal(list)
-
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super(QtGui.QStandardItemModel, self).__init__()
         self.setColumnCount(3)
         self.parent = parent
 
-    def populate(self, dictionary: dict) -> tuple:
+    def populate(self) -> tuple:
         """Fills tree with actions based on dictionary. Also creates groups etc...
 
         Args:
@@ -93,4 +110,15 @@ class StandardItemModel(QtGui.QStandardItemModel):
         Returns:
             tuple: pair of dictioraries of actions and groups
         """
-        
+        self.clear()
+        for action in ActionObject.all():
+            if action.group:
+                pass
+            else:
+                item = QtGui.QStandardItem()
+                item.setText(action.name)
+                item.setData(action)
+                color_item = QtGui.QStandardItem()
+                color_item.setBackground(QtGui.QBrush(
+                    QtGui.QColor(action.color), QtCore.Qt.SolidPattern))
+                self.appendRow([item, color_item])
