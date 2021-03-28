@@ -32,6 +32,21 @@ class ActorHandler(Handler, IActorHandler):
     object_ = ActorObject
 
     @classmethod
+    def check(cls, obj):
+
+        cls.check_unique(obj.name)
+        cls.time_check(obj)
+
+    @classmethod
+    def check_unique(cls, name):
+
+        for obj in cls.object_.filter(group=obj.group):
+            if name == obj.name:
+                raise NameError(
+                    "Object with that name alredy exist in that set. Choose different name"
+                )
+
+    @classmethod
     def time_check(cls, obj):
 
         for t in cls.object_.filter(group=obj.group):
@@ -44,7 +59,7 @@ class ActorHandler(Handler, IActorHandler):
                 or (t.start >= obj.start and t.start <= obj.stop)
                 or (t.stop >= obj.stop and t.stop <= obj.stop)
             ):
-                raise ValueError("zly czas")
+                raise ValueError("Time already in use!")
 
 
 class InfinitActorHandler(Handler, IInfinitActorHandler):
@@ -58,7 +73,7 @@ class InfinitActorHandler(Handler, IInfinitActorHandler):
             else:
                 return False
 
-    # sprawdza czy aktor którego chce dodać (obj) czy się mieśći
+    @classmethod
     def fit_check(cls, obj):
 
         for t in cls.object_.filter(group=obj.group):
@@ -67,5 +82,15 @@ class InfinitActorHandler(Handler, IInfinitActorHandler):
 
         return True
 
+    @classmethod
     def cut_infinit_actor(cls, obj):
-        pass
+        cls.check(obj)
+        for t in cls.object_.filter(group=obj.group):
+            print(t)
+            if t.start <= obj.start:
+                t.stop = obj.start
+
+    @classmethod
+    def check(cls, obj):
+        cls.check_unique(obj.name)
+        cls.fit_check(obj)
