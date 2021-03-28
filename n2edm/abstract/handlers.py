@@ -15,3 +15,7 @@ class IActionHandler(IHandler):
 
 class IActorHandler(IHandler):
     pass
+
+
+class IInfinitActorHandler(IHandler):
+    pass
