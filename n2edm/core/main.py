@@ -20,10 +20,10 @@ def main():
     # print(infact.check_infinit(infact))
     actor = InfinitActorObject(name="abc", action="s", group="d")
     infact.check_infinit(actor)
-    act.addd(1, 2)
-    act.addd(3, 4)
-    act.time_check(act.addd(2.3, 2.4))
-    act.addd(2.3, 2.4)
+    # act.addd(1, 2)
+    # act.addd(3, 4)
+    # act.time_check(act.addd(2.3, 2.4))
+    # act.addd(2.3, 2.4)
     # print(act.check_infinit())
 
 

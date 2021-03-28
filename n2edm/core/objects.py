@@ -255,5 +255,78 @@ class TimelineObject(Object, ITimelineObject):
 
 
 class InfinitActorObject(Object, IInfinitActorObject):
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self, *args, **kwargs):
+        self.group = None
+        self.action = None
+        self.color = None
+        self.params = None
+        self.start = None
+        self.stop = None
+        self.annotate = None
+        self.text = None
+        super().__init__(*args, **kwargs)
+
+
+    @property
+    def group(self):
+        return self._group
+
+    @group.setter
+    def group(self, group):
+        self._group = group
+
+    @property
+    def action(self):
+        return self._action
+
+    @action.setter
+    def action(self, action):
+        self._action = action
+
+    @property
+    def color(self):
+        return self._color
+
+    @color.setter
+    def color(self, color):
+        self._color = color
+
+    @property
+    def params(self):
+        return self._params
+
+    @params.setter
+    def params(self, params):
+        self._params = params
+
+    @property
+    def start(self):
+        return self._start
+
+    @start.setter
+    def start(self, start):
+        self._start = start
+
+    @property
+    def stop(self):
+        return self._stop
+
+    @stop.setter
+    def stop(self, stop):
+        self._stop = stop
+
+    @property
+    def annotate(self):
+        return self._annotate
+
+    @annotate.setter
+    def annotate(self, annotate):
+        self._annotate = annotate
+
+    @property
+    def text(self):
+        return self._text
+
+    @text.setter
+    def text(self, text):
+        self._text = text
