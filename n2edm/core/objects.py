@@ -155,7 +155,6 @@ class ActionObject(GroupObject, IActionObject):
     def delete(cls, id, mark=False):
         # TODO: Cascade deletion for GroupObject and ActionObject
         obj = cls.get(pk=id)
-        print(obj)
         obj.state = "to_delete"
         for i in obj.children:
             i.delete()

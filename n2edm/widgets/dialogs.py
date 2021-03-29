@@ -200,7 +200,7 @@ class GroupDialog(CoreDialog):
         self.group_line_layout.addWidget(self.group_name_line)
         self.confirm_button = QtWidgets.QPushButton("Create")
         self.cancel_button = QtWidgets.QPushButton("Cancel")
-        self.button_line_layout.addWidget(self.set_group_data)
+        self.button_line_layout.addWidget(self.confirm_button)
         self.button_line_layout.addWidget(self.cancel_button)
         self.status_bar = QtWidgets.QStatusBar()
         self.layout.addWidget(self.status_bar)
@@ -211,7 +211,7 @@ class GroupDialog(CoreDialog):
         Returns:
             None
         """
-        self.confirm_button.clicked.connect(self.set_name)
+        self.confirm_button.clicked.connect(self.set_group_data)
         self.cancel_button.clicked.connect(self.cancel)
 
     def set_group_data(self) -> None:

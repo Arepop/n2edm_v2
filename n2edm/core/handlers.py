@@ -14,11 +14,18 @@ class Handler(IHandler):
 
     @classmethod
     def check_unique(cls, obj):
-        for other_obj in cls.object_.filter(group=obj.group):
-            if obj.name == other_obj.name and obj != other_obj:
-                raise NameError(
-                    "Object with that name alredy exist in that set. Choose different name"
-                )
+        if isinstance(obj, GroupObject):
+            for other_obj in cls.object_.filter(name=obj.name):
+                if obj.name == other_obj.name :
+                    raise NameError(
+                        "Object with that name alredy exist in that set. Choose different name"
+                    )
+        else:
+            for other_obj in cls.object_.filter(group=obj.group):
+                if obj.name == other_obj.name:
+                    raise NameError(
+                        "Object with that name alredy exist in that set. Choose different name"
+                    )
 
         return True
 
@@ -27,7 +34,7 @@ class Handler(IHandler):
 
 
 class GroupHandler(Handler, IGroupHandler):
-    pass
+    object_ = GroupObject
 
 
 class ActionHandler(Handler, IActionHandler):

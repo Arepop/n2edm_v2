@@ -32,6 +32,7 @@ class Tree(TreeView):
         super().__init__(parent=parent)
         self.create_view()
         self.action_handler = ActionHandler()
+        self.group_handler = GroupHandler()
 
     def create_view(self):
         self.model = StandardItemModel(self)
@@ -48,10 +49,10 @@ class Tree(TreeView):
     def open_action_creation_dialog(self):
         action_dialog = ActionDialog(self)
         action_dialog.SIG_create_action.connect(self.create_action)
-        action_dialog.group_combo_box.activated.connect(self.open_action_creation_dialog)
+        action_dialog.group_combo_box.activated.connect(lambda: self.open_group_creation_dialog(action_dialog))
         action_dialog.exec()
 
-    def open_group_creation_dialog(self):
+    def open_group_creation_dialog(self, action_dialog):
         if action_dialog.group_combo_box.currentText() == "Create...":
             group_dialog = GroupDialog(self)
             group_dialog.SIG_create_group.connect(self.create_group)
@@ -157,8 +158,8 @@ class StandardItemModel(QtGui.QStandardItemModel):
                 continue
             else:
                 item = QtGui.QStandardItem()
-                item.setText(action.name)
-                item.setData(action)
+                item.setText(group.name)
+                item.setData(group)
                 color_item = QtGui.QStandardItem()
                 color_item.setBackground(QtGui.QBrush(
                     QtGui.QColor('#ffffff'), QtCore.Qt.SolidPattern))
