@@ -11,7 +11,7 @@ class Handler(IHandler):
 
     @classmethod
     def check_unique(cls, obj):
-        for other_obj in cls.object_.all():
+        for other_obj in cls.object_.filter(group=obj.group):
             if obj.name == other_obj.name and obj != other_obj:
                 raise NameError(
                     "Object with that name alredy exist in that set. Choose different name"
@@ -19,9 +19,8 @@ class Handler(IHandler):
 
         return True
 
-    @classmethod
-    def __call__(cls, obj):
-        check_unique(obj)
+    def __call__(self, obj):
+        return self.check_unique(obj)
 
 
 class GroupHandler(Handler, IGroupHandler):
@@ -42,10 +41,8 @@ class ActorHandler(Handler, IActorHandler):
         cls.check_unique(obj.name)
         cls.time_check(obj)
 
-    @classmethod
-    def __call__(cls, obj):
-        check(obj)
-        print("check!")
+    def __call__(self, obj):
+        return self.check(obj)
 
     @classmethod
     def check_unique(cls, name):
@@ -59,15 +56,15 @@ class ActorHandler(Handler, IActorHandler):
     @classmethod
     def time_check(cls, obj):
 
-        for t in cls.object_.filter(group=obj.group):
-            if t == obj:
+        for old_obj in cls.object_.filter(group=obj.group):
+            if old_obj == obj:
                 continue
 
             if (
-                (obj.start >= t.start and obj.start <= t.stop)
-                or (obj.stop >= t.start and obj.stop <= t.stop)
-                or (t.start >= obj.start and t.start <= obj.stop)
-                or (t.stop >= obj.stop and t.stop <= obj.stop)
+                (obj.start >= old_obj.start and obj.start <= old_obj.stop)
+                or (obj.stop >= old_obj.start and obj.stop <= old_obj.stop)
+                or (old_obj.start >= obj.start and old_obj.start <= obj.stop)
+                or (old_obj.stop >= obj.stop and old_obj.stop <= obj.stop)
             ):
                 raise ValueError("Time already in use!")
 
@@ -75,17 +72,13 @@ class ActorHandler(Handler, IActorHandler):
 class InfinitActorHandler(Handler, IInfinitActorHandler):
     object_ = InfinitActorObject
 
-    def __init__(self, *args, **kwargs):
-        print("init")
-
     def __call__(self, obj):
-        self.check(obj)
-        print("check")
+        return self.check(obj)
 
     def check_infinit(cls, obj):
-        for t in cls.object_.filter(group=obj.group):
+        for old_obj in cls.object_.filter(group=obj.group):
 
-            if t is type(InfinitActorObject):
+            if old_obj is type(InfinitActorObject):
                 return True
             else:
                 return False
@@ -93,8 +86,8 @@ class InfinitActorHandler(Handler, IInfinitActorHandler):
     @classmethod
     def fit_check(cls, obj):
 
-        for t in cls.object_.filter(group=obj.group):
-            if t.start == obj.start:
+        for old_obj in cls.object_.filter(group=obj.group):
+            if old_obj.start == obj.start:
                 raise ValueError("Cant fit")
 
         return True
@@ -102,10 +95,9 @@ class InfinitActorHandler(Handler, IInfinitActorHandler):
     @classmethod
     def cut_infinit_actor(cls, obj):
         cls.check(obj)
-        for t in cls.object_.filter(group=obj.group):
-            print(t)
-            if t.start <= obj.start:
-                t.stop = obj.start
+        for old_obj in cls.object_.filter(group=obj.group):
+            if old_obj.start <= obj.start:
+                old_obj.stop = obj.start
 
     @classmethod
     def check(cls, obj):
