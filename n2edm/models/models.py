@@ -20,6 +20,7 @@ class Action(models.Model):
     duration = models.IntegerField()
     params = models.TextField()
     color = models.TextField()
+    position = models.IntegerField()
 
 
 class Actor(models.Model):

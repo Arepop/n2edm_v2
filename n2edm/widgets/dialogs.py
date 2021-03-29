@@ -28,12 +28,13 @@ class ActionDialog(CoreDialog):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
         self.parent = parent
-        self.setWindowTitle("Add Action")
+        self.setWindowTitle("Create Action")
         self.resize(640, 100)
         self.init_layout()
         self.init_widgets()
         self.connections()
-            
+        self.fill_group_combo_box()
+
         self.group = None
         self.name = None
         self.start = None
@@ -108,7 +109,7 @@ class ActionDialog(CoreDialog):
             Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Minimum)
         self.color_line_layout.addWidget(self.color_label)
         self.color_line_layout.addWidget(self.color_button)
-        self.confirm_button = QtWidgets.QPushButton("Add")
+        self.confirm_button = QtWidgets.QPushButton("Create")
         self.cancel_button = QtWidgets.QPushButton("Cancel")
         self.button_line_layout.addWidget(self.confirm_button)
         self.button_line_layout.addWidget(self.cancel_button)
@@ -128,13 +129,13 @@ class ActionDialog(CoreDialog):
         """After loading widgets GroupComboBox is filled with existing group names
         """
         self.group_combo_box.addItem("...", "...")
-        self.group_combo_box.addItem("New...", "...")
+        self.group_combo_box.addItem("Create...", "...")
 
     def set_action_data(self) -> None:
         """Reads action attributes and data from text fields and assign them with
         uniqe ID for every action. Next data is emmited in signal.
         """
-        self.group = self.group_combo_box.currentText()
+        self.group = None if self.group_combo_box.currentText() == "..." else self.group_combo_box.currentText() 
         self.name = self.action_name_line.text()
         self.start = self.start_line.text()
         self.stop = self.stop_line.text()
@@ -148,6 +149,84 @@ class ActionDialog(CoreDialog):
 
     def cancel(self) -> None:
         """After clicking close button dialog is closes.
+        """
+        self.close()
+
+
+class GroupDialog(CoreDialog):
+    """GroupWizzard class. Dialog opens when user choses to create new group for actions.
+
+    Args:
+        parent (QWidget): parent widget of dialog
+        tree (QTreeView): tree with defined actions and groups
+    """
+
+    SIG_create_group = Signal(dict)
+
+    def __init__(self, parent: QtWidgets.QWidget) -> None:
+        super().__init__(parent)
+        self.parent = parent
+        self.setWindowTitle("Create Group")
+        self.init_layout()
+        self.init_widgets()
+        self.connections()
+        self.resize(300, 50)
+
+        self.attr = ['name']
+
+
+    def init_layout(self) -> None:
+        """Initiate all layout for dialog
+
+        Returns:
+            None
+        """
+        self.layout = QtWidgets.QVBoxLayout()
+        self.group_line_layout = QtWidgets.QHBoxLayout()
+        self.button_line_layout = QtWidgets.QHBoxLayout()
+        self.layout.addLayout(self.group_line_layout)
+        self.layout.addLayout(self.button_line_layout)
+        self.setLayout(self.layout)
+
+    def init_widgets(self) -> None:
+        """Initiate all main widgets in main window
+
+        Returns:
+            None
+        """
+        self.group_label = QtWidgets.QLabel("Chose Group")
+        self.group_name_line = QtWidgets.QLineEdit()
+        self.group_line_layout.addWidget(self.group_label)
+        self.group_line_layout.addWidget(self.group_name_line)
+        self.confirm_button = QtWidgets.QPushButton("Create")
+        self.cancel_button = QtWidgets.QPushButton("Cancel")
+        self.button_line_layout.addWidget(self.set_group_data)
+        self.button_line_layout.addWidget(self.cancel_button)
+        self.status_bar = QtWidgets.QStatusBar()
+        self.layout.addWidget(self.status_bar)
+
+    def connections(self) -> None:
+        """Connects all used slots and signals
+
+        Returns:
+            None
+        """
+        self.confirm_button.clicked.connect(self.set_name)
+        self.cancel_button.clicked.connect(self.cancel)
+
+    def set_group_data(self) -> None:
+        """Reads action attributes and data from text fields and assign them with
+        uniqe ID for every action. Next data is emmited in signal.
+        """
+        self.name = self.group_name_line.text()
+
+        attributes = {}
+        for attr in self.attr:
+            attributes[attr] = getattr(self, attr)
+        self.SIG_create_group.emit(attributes)
+
+    def cancel(self) -> None:
+        """After clicking close button dialog closes.
         """
         self.close()
 

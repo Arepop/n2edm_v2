@@ -9,6 +9,9 @@ class Handler(IHandler):
     def __init__(self):
         self.no_object = 0
 
+    def __call__(self, obj):
+        return self.check_unique(obj)
+
     @classmethod
     def check_unique(cls, obj):
         for other_obj in cls.object_.filter(group=obj.group):

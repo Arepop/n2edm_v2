@@ -3,8 +3,8 @@ from PyQt5.QtCore import pyqtSignal as Signal
 
 from ....widgets.views import ActionsView, TreeView, SearchBarView
 from ....core.objects import GroupObject, ActionObject, TimelineObject, InfinitActorObject
-from ....widgets.dialogs import ActionDialog
-from ....core.handlers import ActionHandler
+from ....widgets.dialogs import ActionDialog, GroupDialog
+from ....core.handlers import ActionHandler, GroupHandler
 
 
 class Actions(ActionsView):
@@ -48,11 +48,25 @@ class Tree(TreeView):
     def open_action_creation_dialog(self):
         action_dialog = ActionDialog(self)
         action_dialog.SIG_create_action.connect(self.create_action)
+        action_dialog.group_combo_box.activated.connect(self.open_action_creation_dialog)
         action_dialog.exec()
+
+    def open_group_creation_dialog(self):
+        if action_dialog.group_combo_box.currentText() == "Create...":
+            group_dialog = GroupDialog(self)
+            group_dialog.SIG_create_group.connect(self.create_group)
+            group_dialog.exec()
 
     def create_action(self, attributes):
         try:
-            action = ActionObject.create(self.action_handler.check_unique, **attributes)
+            action = ActionObject.create(self.action_handler, **attributes)
+            self.model.populate()
+        except NameError:
+            print("Window with error name exist")
+    
+    def create_group(self, attributes):
+        try:
+            group = GroupObject.create(self.group_handler, **attributes)
             self.model.populate()
         except NameError:
             print("Window with error name exist")
@@ -66,6 +80,8 @@ class Tree(TreeView):
         item = self.currentIndex().data(role=257)
         ActionObject.delete(item)
         self.model.populate()
+
+        
 
     def search(self, search_str: str) -> None:
         """Searches item in tree view by given name
@@ -85,7 +101,7 @@ class Tree(TreeView):
         add_action = QtWidgets.QAction("Add Action...", self)
         edit_action = QtWidgets.QAction("Edit...", self)
         del_action = QtWidgets.QAction("Delete...", self)
-        add_action.triggered.connect(self.create_action)
+        add_action.triggered.connect(self.open_action_creation_dialog)
         edit_action.triggered.connect(self.update_action)
         del_action.triggered.connect(self.delete_action)
         self.menu.addAction(add_action)
@@ -136,6 +152,18 @@ class StandardItemModel(QtGui.QStandardItemModel):
             tuple: pair of dictioraries of actions and groups
         """
         self.clear()
+        for group in GroupObject.all():
+            if group.state == "to_delete":
+                continue
+            else:
+                item = QtGui.QStandardItem()
+                item.setText(action.name)
+                item.setData(action)
+                color_item = QtGui.QStandardItem()
+                color_item.setBackground(QtGui.QBrush(
+                    QtGui.QColor('#ffffff'), QtCore.Qt.SolidPattern))
+                self.appendRow([item, color_item])
+
         for action in ActionObject.all():
             if action.state == "to_delete":
                 continue
