@@ -12,17 +12,23 @@ from ..core.objects import *
 
 def main():
     print("WOOO2!")
-    hand = Handler()
-    hand.check_unique(name="12")
-    act = ActorHandler()
+    # hand = Handler()
+    # hand.check_unique(name="12")
+    # act = ActorHandler()
+    action = ActionObject.create(name="24234", pk=23)
+
     infact = InfinitActorHandler()
+    infact(action)
+
     # infact.fit_check(act.addd(2.3, 2.4))
     # print(infact.check_infinit(infact))
     iactor = InfinitActorObject(name="abc", action="s", group="d", start=1)
     iactor2 = InfinitActorObject(name="abc255", action="s", group="d", start=4)
     iactor3 = InfinitActorObject(name="abc234", action="s", group="d", start=5)
+    # iactor3(iactor2)
+    actor = ActorObject(name="vs", action=action, group="d", start=1, stop=3)
+    # ActionObject.delete(id=action.pk)
 
-    actor = ActorObject(name="vs", action="asd", group="d", start=1, stop=3)
     infact.object_.objects.append(actor)
     infact.object_.objects.append(iactor)
     # infact.object_.objects.append(iactor2)

@@ -2,6 +2,7 @@ from ..abstract.objects import *
 from ..models.models import *
 from copy import copy
 
+
 class Object(IObject):
 
     model = None
@@ -13,7 +14,6 @@ class Object(IObject):
         self.pk = None
         self.state = None
         Object.set_id = kwargs.get("set_id", id(Object))
-
 
         if args:
             (self.name,) = args
@@ -58,9 +58,8 @@ class Object(IObject):
         yield obj
         check = yield
         if check:
-            cls.objects.append(obj)        
+            cls.objects.append(obj)
         yield obj
-        
 
     @classmethod
     def all(cls):
@@ -96,7 +95,7 @@ class Object(IObject):
 
     @classmethod
     def delete(cls, id, mark=False):
-        #TODO: Cascade deletion for GroupObject and ActionObject
+        # TODO: Cascade deletion for GroupObject and ActionObject
         obj = cls.get(pk=id)
         obj.state = "to_delete"
         if mark:
@@ -146,6 +145,17 @@ class ActionObject(Object, IActionObject):
         self.color = None
         self.params = None
         super().__init__(*args, **kwargs)
+
+    @classmethod
+    def delete(cls, id, mark=False):
+        # TODO: Cascade deletion for GroupObject and ActionObject
+        obj = cls.get(pk=id)
+        print(obj)
+        obj.state = "to_delete"
+        for i in obj.children:
+            i.delete()
+        if mark:
+            return cls.objects.pop(cls.objects.index(obj))
 
     @property
     def children(self):
@@ -296,7 +306,6 @@ class InfinitActorObject(Object, IInfinitActorObject):
         self.annotate = None
         self.text = None
         super().__init__(*args, **kwargs)
-
 
     @property
     def group(self):

@@ -19,6 +19,10 @@ class Handler(IHandler):
 
         return True
 
+    @classmethod
+    def __call__(cls, obj):
+        check_unique(obj)
+
 
 class GroupHandler(Handler, IGroupHandler):
     pass
@@ -26,6 +30,7 @@ class GroupHandler(Handler, IGroupHandler):
 
 class ActionHandler(Handler, IActionHandler):
     object_ = ActionObject
+
 
 class ActorHandler(Handler, IActorHandler):
 
@@ -36,6 +41,11 @@ class ActorHandler(Handler, IActorHandler):
 
         cls.check_unique(obj.name)
         cls.time_check(obj)
+
+    @classmethod
+    def __call__(cls, obj):
+        check(obj)
+        print("check!")
 
     @classmethod
     def check_unique(cls, name):
@@ -65,6 +75,13 @@ class ActorHandler(Handler, IActorHandler):
 class InfinitActorHandler(Handler, IInfinitActorHandler):
     object_ = InfinitActorObject
 
+    def __init__(self, *args, **kwargs):
+        print("init")
+
+    def __call__(self, obj):
+        self.check(obj)
+        print("check")
+
     def check_infinit(cls, obj):
         for t in cls.object_.filter(group=obj.group):
 
@@ -92,5 +109,5 @@ class InfinitActorHandler(Handler, IInfinitActorHandler):
 
     @classmethod
     def check(cls, obj):
-        cls.check_unique(obj.name)
+        cls.check_unique(obj)
         cls.fit_check(obj)
