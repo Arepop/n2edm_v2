@@ -5,14 +5,14 @@ from copy import copy
 class Object(IObject):
 
     model = None
-    set_id = None
+    _set_id = None
     objects = []
 
     def __init__(self, *args, **kwargs):
         self.name = None
         self.pk = None
         self.state = None
-        Object.set_id = kwargs.get("set_id", id(Object))
+        Object._set_id = kwargs.get("set_id", id(Object))
 
 
         if args:
@@ -52,56 +52,14 @@ class Object(IObject):
         self._name = name
 
     @classmethod
-    def create(cls, *args, **kwargs):
+    def create(cls, handler, *args, **kwargs):
         obj = cls(*args, **kwargs)
-        obj.state = "to_create"
-        yield obj
-        check = yield
+        check = handler(obj)
         if check:
-            cls.objects.append(obj)        
-        yield obj
+            obj.state = "to_create"
+            cls.objects.append(obj)
+        return obj if check else None
         
-
-    @classmethod
-    def all(cls):
-        return (obj for obj in cls.objects if isinstance(obj, cls))
-
-    @classmethod
-    def get(cls, *args, **kwargs):
-        for arg, value in kwargs.items():
-            if not hasattr(cls, arg):
-                raise AttributeError(f"'{cls} attribute': '{arg}' does not exist!")
-            for obj in cls.all():
-                prop = getattr(cls, arg)
-                if not isinstance(prop, property):
-                    if value == prop:
-                        return obj
-                elif value == prop.fget(obj):
-                    return obj
-
-        raise IndexError(f"Object of class '{cls}' not found")
-
-    @classmethod
-    def filter(cls, *args, **kwargs):
-        for arg, value in kwargs.items():
-            if not hasattr(cls, str(arg)):
-                raise TypeError(f"'{cls} attribute': '{arg}'' does not exist!")
-            for obj in cls.all():
-                prop = getattr(cls, arg)
-                if not isinstance(prop, property):
-                    if value == prop:
-                        yield obj
-                elif value == prop.fget(obj):
-                    yield obj
-
-    @classmethod
-    def delete(cls, id, mark=False):
-        #TODO: Cascade deletion for GroupObject and ActionObject
-        obj = cls.get(pk=id)
-        obj.state = "to_delete"
-        if mark:
-            return cls.objects.pop(cls.objects.index(obj))
-
     @classmethod
     def update(cls, obj, *args, **kwargs):
         for arg, value in kwargs.items():
@@ -109,9 +67,50 @@ class Object(IObject):
                 raise TypeError(f"'{cls} attribute': '{arg}'' does not exist!")
             setattr(obj, arg, value)
         obj.state = "to_update"
-        self.stack.append(copy(self.objects))
         return obj
 
+    @classmethod
+    def delete(cls, obj, mark=False):
+        #TODO: Cascade deletion for GroupObject and ActionObject - Juliusz Task
+        obj.state = "to_delete"
+        if mark:
+            return cls.objects.pop(cls.objects.index(obj))
+    
+    @classmethod
+    def all(cls):
+        return (obj for obj in cls.objects if isinstance(obj, cls))
+
+    @classmethod
+    def get(cls, *args, **kwargs):
+        rv = None
+        for obj in cls.all():
+            for kwarg, value in kwargs.items():
+                key = f"_{kwarg}"
+                if key not in vars(obj).keys():
+                    raise AttributeError(f"'{cls}' don't have attribute '{arg}'!")
+                elif value != vars(obj).get(key):
+                    break
+
+            rv = obj
+        return rv
+
+    @classmethod
+    def filter(cls, *args, **kwargs):
+        for obj in cls.all():
+            for kwarg, value in kwargs.items():
+                key = f"_{kwarg}"
+                if key not in vars(obj).keys():
+                    raise AttributeError(f"'{cls}' don't have attribute '{arg}'!")
+                elif value != vars(obj).get(key):
+                    break
+
+            yield obj
+
+    @classmethod
+    def clear(cls, *args, **kwargs):
+        for obj in cls.all():
+            mark = True if obj.state == None else False
+            cls.delete(obj, mark)
 
 class GroupObject(Object, IGroupObject):
 

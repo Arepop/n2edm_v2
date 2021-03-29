@@ -35,7 +35,7 @@ class SyncProvider:
             obj.state = None
             return
 
-        obj.set_id = attributes["set_id"]
+        obj._set_id = attributes["set_id"]
         
         for key, value in attributes.items():
             if getattr(obj, key) != value:
@@ -91,7 +91,7 @@ class SyncProvider:
         for key, value in vars(obj).items():
             attributes[key.strip("_")] = value
 
-        attributes["set_id"] = obj.set_id
+        attributes["set_id"] = obj._set_id
 
         del attributes["pk"]
         del attributes["state"]

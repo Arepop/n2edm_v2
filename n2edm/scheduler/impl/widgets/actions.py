@@ -45,6 +45,28 @@ class Tree(TreeView):
         self.setSortingEnabled(True)
         self.sortByColumn(0, QtCore.Qt.AscendingOrder)
 
+    def open_action_creation_dialog(self):
+        action_dialog = ActionDialog(self)
+        action_dialog.SIG_create_action.connect(self.create_action)
+        action_dialog.exec()
+
+    def create_action(self, attributes):
+        try:
+            action = ActionObject.create(self.action_handler.check_unique, **attributes)
+            self.model.populate()
+        except NameError:
+            print("Window with error name exist")
+
+    def update_action(self, obj, attributes):
+        ActionObject.update(obj, **attributes)
+
+    def delete_action(self):
+        """Remove selected group or action from tree
+        """
+        item = self.currentIndex().data(role=257)
+        ActionObject.delete(item)
+        self.model.populate()
+
     def search(self, search_str: str) -> None:
         """Searches item in tree view by given name
 
@@ -53,21 +75,24 @@ class Tree(TreeView):
         """
         self.proxy_model.setFilterRegExp(search_str)
 
-    def open_action_creation_dialog(self):
-        action_dialog = ActionDialog(self)
-        action_dialog.SIG_create_action.connect(self.create_action)
-        action_dialog.exec()
+    def contextMenuEvent(self, event: QtCore.QEvent) -> None:
+        """Context menu controller and looks for action tree.pardir
 
-    def create_action(self, attributes):
-        action = ActionObject.create(**attributes)
-        obj = next(action)
-        try:
-            can_create = self.action_handler.check_unique(obj)
-        except NameError:
-            can_create = False
-        next(action)
-        obj = action.send(can_create)
-        self.model.populate()
+        Args:
+            event (QtCore.QEvent): QContextEvent
+        """
+        self.menu = QtWidgets.QMenu(self)
+        add_action = QtWidgets.QAction("Add Action...", self)
+        edit_action = QtWidgets.QAction("Edit...", self)
+        del_action = QtWidgets.QAction("Delete...", self)
+        add_action.triggered.connect(self.create_action)
+        edit_action.triggered.connect(self.update_action)
+        del_action.triggered.connect(self.delete_action)
+        self.menu.addAction(add_action)
+        self.menu.addAction(edit_action)
+        self.menu.addAction(del_action)
+        self.menu.popup(QtGui.QCursor.pos())
+
 
 class SearchBar(SearchBarView):
     search_sig = Signal(str)
@@ -112,6 +137,8 @@ class StandardItemModel(QtGui.QStandardItemModel):
         """
         self.clear()
         for action in ActionObject.all():
+            if action.state == "to_delete":
+                continue
             if action.group:
                 pass
             else:
