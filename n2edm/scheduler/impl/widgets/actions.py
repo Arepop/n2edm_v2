@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal as Signal
 
 from ....widgets.views import ActionsView, TreeView, SearchBarView
-from ....core.objects import GroupObject, ActionObject, TimelineObject, InfinitActorObject
+from ....core.objects import GroupObject, ActionObject, Object
 from ....widgets.dialogs import ActionDialog, GroupDialog
 from ....core.handlers import ActionHandler, GroupHandler
 
@@ -47,13 +47,13 @@ class Tree(TreeView):
         self.sortByColumn(0, QtCore.Qt.AscendingOrder)
 
     def open_action_creation_dialog(self):
-        action_dialog = ActionDialog(self)
-        action_dialog.SIG_create_action.connect(self.create_action)
-        action_dialog.group_combo_box.activated.connect(lambda: self.open_group_creation_dialog(action_dialog))
-        action_dialog.exec()
+        self.action_dialog = ActionDialog(self)
+        self.action_dialog.SIG_create_action.connect(self.create_action)
+        self.action_dialog.group_combo_box.activated.connect(lambda: self.open_group_creation_dialog(self.action_dialog))
+        self.action_dialog.exec()
 
     def open_group_creation_dialog(self, action_dialog):
-        if action_dialog.group_combo_box.currentText() == "Create...":
+        if self.action_dialog.group_combo_box.currentText() == "Create...":
             group_dialog = GroupDialog(self)
             group_dialog.SIG_create_group.connect(self.create_group)
             group_dialog.exec()
@@ -68,21 +68,21 @@ class Tree(TreeView):
     def create_group(self, attributes):
         try:
             group = GroupObject.create(self.group_handler, **attributes)
-            self.model.populate()
+            self.action_dialog.group_combo_box.clear()
+            self.action_dialog.fill_group_combo_box()
+            self.action_dialog.group_combo_box.addItem(group.name, group)
         except NameError:
             print("Window with error name exist")
 
-    def update_action(self, obj, attributes):
-        ActionObject.update(obj, **attributes)
+    def update_entry(self, obj, attributes):
+        Object.update(obj, **attributes)
 
-    def delete_action(self):
+    def delete_entry(self):
         """Remove selected group or action from tree
         """
         item = self.currentIndex().data(role=257)
-        ActionObject.delete(item)
+        item.delete(item)
         self.model.populate()
-
-        
 
     def search(self, search_str: str) -> None:
         """Searches item in tree view by given name
@@ -103,8 +103,8 @@ class Tree(TreeView):
         edit_action = QtWidgets.QAction("Edit...", self)
         del_action = QtWidgets.QAction("Delete...", self)
         add_action.triggered.connect(self.open_action_creation_dialog)
-        edit_action.triggered.connect(self.update_action)
-        del_action.triggered.connect(self.delete_action)
+        edit_action.triggered.connect(self.update_entry)
+        del_action.triggered.connect(self.delete_entry)
         self.menu.addAction(add_action)
         self.menu.addAction(edit_action)
         self.menu.addAction(del_action)

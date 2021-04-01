@@ -128,14 +128,14 @@ class ActionDialog(CoreDialog):
     def fill_group_combo_box(self) -> None:
         """After loading widgets GroupComboBox is filled with existing group names
         """
-        self.group_combo_box.addItem("...", "...")
+        self.group_combo_box.addItem("...", None)
         self.group_combo_box.addItem("Create...", "...")
 
     def set_action_data(self) -> None:
         """Reads action attributes and data from text fields and assign them with
         uniqe ID for every action. Next data is emmited in signal.
         """
-        self.group = None if self.group_combo_box.currentText() == "..." else self.group_combo_box.currentText() 
+        self.group = self.group_combo_box.currentData()
         self.name = self.action_name_line.text()
         self.start = self.start_line.text()
         self.stop = self.stop_line.text()
@@ -146,6 +146,7 @@ class ActionDialog(CoreDialog):
         for attr in self.attr:
             attributes[attr] = getattr(self, attr)
         self.SIG_create_action.emit(attributes)
+        self.close()
 
     def cancel(self) -> None:
         """After clicking close button dialog is closes.

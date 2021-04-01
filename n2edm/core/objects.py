@@ -71,7 +71,6 @@ class Object(IObject):
 
     @classmethod
     def delete(cls, obj, mark=False):
-        #TODO: Cascade deletion for GroupObject and ActionObject - Juliusz Task
         if obj.state == "to_create":
             return cls.objects.pop(cls.objects.index(obj))
         obj.state = "to_delete"
@@ -80,7 +79,10 @@ class Object(IObject):
 
     @classmethod
     def all(cls):
-        return (obj for obj in cls.objects if isinstance(obj, cls))
+        if cls == Object:
+            return cls.objects
+        return (obj for obj in cls.objects if type(obj) == cls)
+        
 
     @classmethod
     def get(cls, *args, **kwargs):
@@ -137,6 +139,11 @@ class GroupObject(Object, IGroupObject):
     def position(self, position):
         self._position = position
 
+    @classmethod
+    def delete(cls, obj, mark=False):
+        for child in obj.children:
+            cls.delete(child)
+        super().delete(obj, mark)
 
 class ActionObject(GroupObject, IActionObject):
 
@@ -149,17 +156,12 @@ class ActionObject(GroupObject, IActionObject):
         self.duration = None
         self.color = None
         self.params = None
+        self.position = None
         super().__init__(*args, **kwargs)
 
-    @classmethod
-    def delete(cls, id, mark=False):
-        # TODO: Cascade deletion for GroupObject and ActionObject
-        obj = cls.get(pk=id)
-        obj.state = "to_delete"
-        for i in obj.children:
-            i.delete()
-        if mark:
-            return cls.objects.pop(cls.objects.index(obj))
+    @property
+    def children(self):
+        return ActorObject.filter(action=self)
 
     @property
     def group(self):
