@@ -141,8 +141,8 @@ class GroupObject(Object, IGroupObject):
 
     @classmethod
     def delete(cls, obj, mark=False):
-        for child in obj.children:
-            cls.delete(child)
+        for child in reversed(list(obj.children)):
+            child.delete(child)
         super().delete(obj, mark)
 
 class ActionObject(GroupObject, IActionObject):

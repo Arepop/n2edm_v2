@@ -63,7 +63,8 @@ class Tree(TreeView):
             action = ActionObject.create(self.action_handler, **attributes)
             self.model.populate()
         except NameError:
-            print("Window with error name exist")
+            pass
+            # print("Action with error name exist")
     
     def create_group(self, attributes):
         try:
@@ -71,8 +72,10 @@ class Tree(TreeView):
             self.action_dialog.group_combo_box.clear()
             self.action_dialog.fill_group_combo_box()
             self.action_dialog.group_combo_box.addItem(group.name, group)
+            self.action_dialog.group_combo_box.setCurrentText(group.name)
         except NameError:
-            print("Window with error name exist")
+            # print("Group with error name exist")
+            pass
 
     def update_entry(self, obj, attributes):
         Object.update(obj, **attributes)
@@ -169,7 +172,15 @@ class StandardItemModel(QtGui.QStandardItemModel):
             if action.state == "to_delete":
                 continue
             if action.group:
-                pass
+                item = QtGui.QStandardItem()
+                item.setText(action.name)
+                item.setData(action)
+                color_item = QtGui.QStandardItem()
+                color_item.setBackground(QtGui.QBrush(
+                    QtGui.QColor(action.color), QtCore.Qt.SolidPattern))
+                parent_item, = self.findItems(action.group.name)
+                parent_item.appendRow([item, color_item])
+                
             else:
                 item = QtGui.QStandardItem()
                 item.setText(action.name)

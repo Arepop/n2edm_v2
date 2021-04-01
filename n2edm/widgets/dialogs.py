@@ -146,7 +146,6 @@ class ActionDialog(CoreDialog):
         for attr in self.attr:
             attributes[attr] = getattr(self, attr)
         self.SIG_create_action.emit(attributes)
-        self.close()
 
     def cancel(self) -> None:
         """After clicking close button dialog is closes.
@@ -225,6 +224,7 @@ class GroupDialog(CoreDialog):
         for attr in self.attr:
             attributes[attr] = getattr(self, attr)
         self.SIG_create_group.emit(attributes)
+        self.close()
 
     def cancel(self) -> None:
         """After clicking close button dialog closes.

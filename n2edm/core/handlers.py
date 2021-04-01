@@ -14,7 +14,7 @@ class Handler(IHandler):
 
     @classmethod
     def check_unique(cls, obj):
-        if isinstance(obj, GroupObject):
+        if type(obj) == GroupObject:
             for other_obj in cls.object_.filter(name=obj.name):
                 if obj.name == other_obj.name :
                     raise NameError(
