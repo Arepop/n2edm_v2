@@ -15,8 +15,8 @@ class Object(IObject):
         self.state = None
         Object._set_id = kwargs.get("set_id", id(Object))
 
-        if args:
-            (self.name,) = args
+        # if args:
+        #     (self.name,) = args
         for arg, value in kwargs.items():
             if hasattr(self, arg):
                 setattr(self, arg, value)

@@ -33,8 +33,7 @@ class ActionDialog(CoreDialog):
         self.init_layout()
         self.init_widgets()
         self.connections()
-        self.fill_group_combo_box()
-
+        
         self.group = None
         self.name = None
         self.start = None
@@ -125,11 +124,14 @@ class ActionDialog(CoreDialog):
         self.cancel_button.clicked.connect(self.cancel)
         self.confirm_button.clicked.connect(self.set_action_data)
 
-    def fill_group_combo_box(self) -> None:
+    def fill_group_combo_box(self, groups=[]) -> None:
         """After loading widgets GroupComboBox is filled with existing group names
         """
         self.group_combo_box.addItem("...", None)
         self.group_combo_box.addItem("Create...", "...")
+        for group in groups:
+            self.group_combo_box.addItem(group.name, group)
+
 
     def set_action_data(self) -> None:
         """Reads action attributes and data from text fields and assign them with
