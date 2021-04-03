@@ -14,9 +14,9 @@ class Handler(IHandler):
 
     @classmethod
     def check_unique(cls, obj):
-        if isinstance(obj, GroupObject):
+        if type(obj) == GroupObject:
             for other_obj in cls.object_.filter(name=obj.name):
-                if obj.name == other_obj.name :
+                if obj.name == other_obj.name:
                     raise NameError(
                         "Object with that name alredy exist in that set. Choose different name"
                     )
@@ -35,6 +35,72 @@ class Handler(IHandler):
 
 class GroupHandler(Handler, IGroupHandler):
     object_ = GroupObject
+
+    max_pos = len(list(GroupObject.all()))
+
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+    @classmethod
+    def test(cls):
+        print("elo")
+        for i in cls.object_.all():
+            print(i.name)
+
+    @classmethod
+    def length(cls, obj):
+        a = cls.all()
+        group_list = []
+        for item in a:
+            if item.group not in group_list:
+                group_list.append(item.group)
+
+        print(group_list)
+        return len(group_list)
+
+    @classmethod
+    def group_list(cls):
+        a = cls.all()
+        group_listt = []
+        for item in a:
+            if item.group not in group_listt:
+                group_listt.append(item.group)
+        return group_listt
+
+    @classmethod
+    def positions(cls):
+        ii = 0
+        for i in cls.group_list():
+            s = cls.filter(group=i)
+            for ss in s:
+                print(ss.name)
+                print(ss.group)
+                print(ss.position)
+
+    @classmethod
+    def set_positions(cls):
+        ii = -1
+        for i in cls.group_list():
+            print("i")
+            print(i)
+            print(cls.filter(group=i))
+
+            for ss in cls.filter(group=i):
+                ss.position = ii
+                print(ss.name)
+                print(ss.group)
+                print(ss.position)
+            ii += 1
+            print("stop")
+
+    @classmethod
+    def setit(cls):
+        print("her")
+        for i in AcionObject.all():
+            print(i)
+        # cls.all().group
+        # print(cls.poss[4].name)
 
 
 class ActionHandler(Handler, IActionHandler):

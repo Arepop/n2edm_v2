@@ -7,6 +7,7 @@ class Group(models.Model):
     set_id = models.TextField()
     name = models.TextField()
     position = models.IntegerField()
+    # max_pos = models.IntegerField()
 
 
 class Action(models.Model):
