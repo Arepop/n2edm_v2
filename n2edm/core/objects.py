@@ -27,6 +27,7 @@ class Object(IObject):
     def item(self):
         if self.pk:
             return self.model.objects.get(pk=self.pk)
+
         return None
 
     @property
@@ -75,6 +76,7 @@ class Object(IObject):
     @classmethod
     def delete(cls, obj, mark=False):
         # TODO: Cascade deletion for GroupObject and ActionObject - Juliusz Task
+
         if obj.state == "to_create":
             return cls.objects.pop(cls.objects.index(obj))
         obj.state = "to_delete"
@@ -128,14 +130,17 @@ class GroupObject(Object, IGroupObject):
 
     @classmethod
     def create(cls, handler, *args, **kwargs):
+        a = super().create(handler, args, kwargs)
 
-        print(handler.max_pos)
-
-        print("dupa")
-        super().create(handler, args, kwargs)
+        if cls == GroupObject:
+            a.hand = handler
+            a.position = handler.max_pos
+            handler.max_pos += 1
+        return a
 
     def __init__(self, *args, **kwargs):
         self.position = None
+        self.hand = None
         super().__init__(*args, **kwargs)
 
     @property
@@ -152,8 +157,15 @@ class GroupObject(Object, IGroupObject):
 
     @classmethod
     def delete(cls, obj, mark=False):
+        for lower in GroupObject.all():
+            if lower.position > obj.position:
+                print(lower.position)
+                lower.position -= 1
         for child in reversed(list(obj.children)):
+
             child.delete(child)
+
+        obj.hand.max_pos -= 1
         super().delete(obj, mark)
 
 
