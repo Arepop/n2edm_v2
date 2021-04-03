@@ -48,6 +48,7 @@ class Tree(TreeView):
 
     def open_action_creation_dialog(self):
         self.action_dialog = ActionDialog(self)
+        self.action_dialog.fill_group_combo_box(GroupObject.all())
         self.action_dialog.SIG_create_action.connect(self.create_action)
         self.action_dialog.group_combo_box.activated.connect(lambda: self.open_group_creation_dialog(self.action_dialog))
         self.action_dialog.exec()
@@ -63,16 +64,17 @@ class Tree(TreeView):
             action = ActionObject.create(self.action_handler, **attributes)
             self.model.populate()
         except NameError:
-            print("Window with error name exist")
+            pass
+            # print("Action with error name exist")
     
     def create_group(self, attributes):
         try:
             group = GroupObject.create(self.group_handler, **attributes)
-            self.action_dialog.group_combo_box.clear()
-            self.action_dialog.fill_group_combo_box()
             self.action_dialog.group_combo_box.addItem(group.name, group)
+            self.action_dialog.group_combo_box.setCurrentText(group.name)
         except NameError:
-            print("Window with error name exist")
+            # print("Group with error name exist")
+            pass
 
     def update_entry(self, obj, attributes):
         Object.update(obj, **attributes)
@@ -82,7 +84,10 @@ class Tree(TreeView):
         """
         item = self.currentIndex().data(role=257)
         item.delete(item)
-        self.model.populate()
+        if type(item) == ActionObject:
+            self.model.remove_action(item)
+        else:
+            self.model.remove_group(item)
 
     def search(self, search_str: str) -> None:
         """Searches item in tree view by given name
@@ -154,27 +159,59 @@ class StandardItemModel(QtGui.QStandardItemModel):
         """
         self.clear()
         for group in GroupObject.all():
-            if group.state == "to_delete":
-                continue
-            else:
-                item = QtGui.QStandardItem()
-                item.setText(group.name)
-                item.setData(group)
-                color_item = QtGui.QStandardItem()
-                color_item.setBackground(QtGui.QBrush(
-                    QtGui.QColor('#ffffff'), QtCore.Qt.SolidPattern))
-                self.appendRow([item, color_item])
+            self.add_group(group)
 
         for action in ActionObject.all():
-            if action.state == "to_delete":
-                continue
-            if action.group:
-                pass
-            else:
-                item = QtGui.QStandardItem()
-                item.setText(action.name)
-                item.setData(action)
-                color_item = QtGui.QStandardItem()
-                color_item.setBackground(QtGui.QBrush(
-                    QtGui.QColor(action.color), QtCore.Qt.SolidPattern))
-                self.appendRow([item, color_item])
+            self.add_action(action)
+
+    def add_action(self, action):
+        if action.state == "to_delete":
+                return
+        if action.group:
+            item = QtGui.QStandardItem()
+            item.setText(action.name)
+            item.setData(action)
+            color_item = QtGui.QStandardItem()
+            color_item.setBackground(QtGui.QBrush(
+                QtGui.QColor(action.color), QtCore.Qt.SolidPattern))
+            group_item, = self.findItems(action.group.name)
+            group_item.appendRow([item, color_item])
+            group_item.setEditable(False)
+        else:
+            item = QtGui.QStandardItem()
+            item.setText(action.name)
+            item.setData(action)
+            color_item = QtGui.QStandardItem()
+            color_item.setBackground(QtGui.QBrush(
+                QtGui.QColor(action.color), QtCore.Qt.SolidPattern))
+            self.appendRow([item, color_item])
+        item.setEditable(False)
+        color_item.setEditable(False)
+
+    def add_group(self, group):
+        if group.state == "to_delete":
+            return
+        else:
+            item = QtGui.QStandardItem()
+            item.setText(group.name)
+            item.setData(group)
+            color_item = QtGui.QStandardItem()
+            color_item.setBackground(QtGui.QBrush(
+                QtGui.QColor('#ffffff'), QtCore.Qt.SolidPattern))
+            self.appendRow([item, color_item])
+        item.setEditable(False)
+        color_item.setEditable(False)
+
+    def remove_action(self, action):
+        if action.group:
+            group_item, = self.findItems(action.group.name) 
+            item, = group_item.findItems(action.name)
+            group_item.removeRow(item.row())
+        else:
+            item, = self.findItems(action.name) 
+            self.removeRow(item.row())
+
+    def remove_group(self, group):
+        group_item, = self.findItems(group.name) 
+        self.removeRow(group_item.row())
+
