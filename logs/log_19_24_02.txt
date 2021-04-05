@@ -1,0 +1,13 @@
+19:24:20,881 root ERROR Traceback (most recent call last):
+  File "C:\Users\hsare\nedm-v2\n2edm_v2\n2edm\scheduler\impl\widgets\actions.py", line 59, in <lambda>
+    self.edit_dialog.SIG_edit_action.connect(lambda attributes, obj=obj: self.update_entry(attributes, obj))
+  File "C:\Users\hsare\nedm-v2\n2edm_v2\n2edm\scheduler\impl\widgets\actions.py", line 88, in update_entry
+    obj = ActionObject.update(self.action_handler, obj, **attributes)
+  File "C:\Users\hsare\nedm-v2\n2edm_v2\n2edm\core\objects.py", line 67, in update
+    check = handler(obj)
+  File "C:\Users\hsare\nedm-v2\n2edm_v2\n2edm\core\handlers.py", line 33, in __call__
+    return self.check_unique(obj)
+  File "C:\Users\hsare\nedm-v2\n2edm_v2\n2edm\core\handlers.py", line 26, in check_unique
+    raise NameError(
+NameError: Object with that name alredy exist in that set. Choose different name
+NoneType: None

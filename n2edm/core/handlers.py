@@ -16,13 +16,13 @@ class Handler(IHandler):
     def check_unique(cls, obj):
         if type(obj) == GroupObject:
             for other_obj in cls.object_.filter(name=obj.name):
-                if obj.name == other_obj.name :
+                if obj.name == other_obj.name and obj != other_obj:
                     raise NameError(
                         "Object with that name alredy exist in that set. Choose different name"
                     )
         else:
             for other_obj in cls.object_.filter(group=obj.group):
-                if obj.name == other_obj.name:
+                if obj.name == other_obj.name and obj != other_obj:
                     raise NameError(
                         "Object with that name alredy exist in that set. Choose different name"
                     )
