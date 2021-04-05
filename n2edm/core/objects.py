@@ -137,7 +137,7 @@ class GroupObject(Object, IGroupObject):
 
     @classmethod
     def create(cls, handler, *args, **kwargs):
-        a = super().create(handler, args, kwargs)
+        a = super().create(handler, *args, **kwargs)
 
         if cls == GroupObject:
             a.hand = handler
@@ -166,7 +166,6 @@ class GroupObject(Object, IGroupObject):
     def delete(cls, obj, mark=False):
         for lower in GroupObject.all():
             if lower.position > obj.position:
-                print(lower.position)
                 lower.position -= 1
         for child in reversed(list(obj.children)):
 

@@ -14,6 +14,7 @@ django.setup()
 
 from ....widgets.views import SchedulerView
 from ....core.objects import GroupObject, ActorObject, ActorObject, TimelineObject, InfinitActorObject
+from ....core.handlers import ActorHandler
 
 
 class Scheduler(SchedulerView):
@@ -22,6 +23,8 @@ class Scheduler(SchedulerView):
         self.create_canvas()
         self.set_canvas_attributes(100)
         self.set_canvas_labels()
+
+        self.actor_handler = ActorHandler()
 
     def create_canvas(self) -> None:
         """Create matplotlib canvas and tollbar
@@ -57,3 +60,19 @@ class Scheduler(SchedulerView):
     def update_canvas(self):
         for actor in ActorObject.all():
             self.canvas.draw()
+
+    def create_actor(self, action):
+        attributes = {
+            "name": action.name,
+            "group": action.group,
+            "action": action,
+            "start": None,
+            "stop": None,
+            "duration": action.duration,
+            "color": action.color,
+            "params": action.params,
+            "annotate": action.name,
+            "text": action.name,
+
+        }
+        actor = ActorObject.create(self.actor_handler, **attributes)

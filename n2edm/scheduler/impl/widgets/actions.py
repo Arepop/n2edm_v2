@@ -28,6 +28,9 @@ class Actions(ActionsView):
         self.main_layout.addWidget(self.tree)
 
 class Tree(TreeView):
+
+    SIG_create_actor = Signal(object)
+
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.create_view()
@@ -124,6 +127,20 @@ class Tree(TreeView):
         self.menu.addAction(edit_action)
         self.menu.addAction(del_action)
         self.menu.popup(QtGui.QCursor.pos())
+
+    def mouseDoubleClickEvent(self, event: QtCore.QEvent) -> None:
+        """Overloaded method of mouseDoubleClickEvent. Emits signal with action (Adds actor).
+
+        Args:
+            event (QEvent): MouseClickEvent
+        """
+        action = self.currentIndex().data(role=257)
+        if action is None:
+            action = self.currentIndex().siblingAtColumn(
+                self.currentIndex().column()-1).data(role=257)
+
+        if isinstance(action, ActionObject):
+            self.SIG_create_actor.emit(action)
 
 
 class SearchBar(SearchBarView):

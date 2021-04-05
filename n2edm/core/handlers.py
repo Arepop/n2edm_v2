@@ -66,20 +66,13 @@ class ActorHandler(Handler, IActorHandler):
     @classmethod
     def check(cls, obj):
 
-        cls.check_unique(obj.name)
+        # cls.check_unique(obj)
         cls.time_check(obj)
+
+        return True
 
     def __call__(self, obj):
         return self.check(obj)
-
-    @classmethod
-    def check_unique(cls, name):
-
-        for obj in cls.object_.filter(group=obj.group):
-            if name == obj.name:
-                raise NameError(
-                    "Object with that name alredy exist in that set. Choose different name"
-                )
 
     @classmethod
     def time_check(cls, obj):
@@ -88,14 +81,13 @@ class ActorHandler(Handler, IActorHandler):
             if old_obj == obj:
                 continue
 
-            if (
+            elif (
                 (obj.start >= old_obj.start and obj.start <= old_obj.stop)
                 or (obj.stop >= old_obj.start and obj.stop <= old_obj.stop)
                 or (old_obj.start >= obj.start and old_obj.start <= obj.stop)
                 or (old_obj.stop >= obj.stop and old_obj.stop <= obj.stop)
             ):
                 raise ValueError("Time already in use!")
-
 
 class InfinitActorHandler(Handler, IInfinitActorHandler):
     object_ = InfinitActorObject
