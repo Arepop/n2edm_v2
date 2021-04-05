@@ -9,7 +9,7 @@ from ..widgets.dialogs import ErrorDialog
 
 from PyQt5 import QtWidgets
 
-current_time = datetime.now().strftime("%H_%M_%S")
+current_time = datetime.now().strftime("%Y_%m_%d_%H_%M")
 
 logging.basicConfig(filename=f"logs/log_{current_time}.txt",
                         filemode='a',
@@ -19,7 +19,6 @@ logging.basicConfig(filename=f"logs/log_{current_time}.txt",
 
 logger = logging.getLogger('n2edm')
 
-
 def exception_hook(exctype, value, traceback):
     traceback_formated = trs.format_exception(exctype, value, traceback)
     traceback_string = "".join(traceback_formated)
@@ -27,15 +26,12 @@ def exception_hook(exctype, value, traceback):
     logging.exception(traceback_string)    
     dialog.exec()
 
-
 def main():
     sys.excepthook = exception_hook
     app = QtWidgets.QApplication(sys.argv)
     GUI = Base()
     GUI.show()
     sys.exit(app.exec_())
-
-
 
 if __name__ == "__main__":
     main()
