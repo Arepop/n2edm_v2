@@ -5,6 +5,7 @@ from .objects import *
 class Handler(IHandler):
 
     object_ = Object
+    max_pos = 0
 
     def __init__(self):
         self.no_object = 0
@@ -35,6 +36,23 @@ class Handler(IHandler):
 
 class GroupHandler(Handler, IGroupHandler):
     object_ = GroupObject
+
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+    @classmethod
+    def test(cls):
+        print("test")
+        for i in GroupObject.all():
+            print(i.name)
+            print(i.position)
+
+    @classmethod
+    def swap_position(cls, obj1, obj2):
+        temp = obj1.position
+        obj1.position = obj2.position
+        obj2.postion = temp
 
 
 class ActionHandler(Handler, IActionHandler):

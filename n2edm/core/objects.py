@@ -1,6 +1,7 @@
 from ..abstract.objects import *
 from ..models.models import *
 from copy import copy
+import random
 
 
 class Object(IObject):
@@ -8,6 +9,7 @@ class Object(IObject):
     model = None
     _set_id = None
     objects = []
+    max_pos = 0
 
     def __init__(self, *args, **kwargs):
         self.name = None
@@ -16,7 +18,7 @@ class Object(IObject):
         Object._set_id = kwargs.get("set_id", id(Object))
 
         if args:
-            (self.name,) = args
+            (self.name) = args
         for arg, value in kwargs.items():
             if hasattr(self, arg):
                 setattr(self, arg, value)
@@ -25,6 +27,7 @@ class Object(IObject):
     def item(self):
         if self.pk:
             return self.model.objects.get(pk=self.pk)
+
         return None
 
     @property
@@ -58,6 +61,7 @@ class Object(IObject):
         if check:
             obj.state = "to_create"
             cls.objects.append(obj)
+        cls.max_pos += 1
         return obj if check else None
 
     @classmethod
@@ -78,6 +82,8 @@ class Object(IObject):
 
     @classmethod
     def delete(cls, obj, mark=False):
+        # TODO: Cascade deletion for GroupObject and ActionObject - Juliusz Task
+
         if obj.state == "to_create":
             return cls.objects.pop(cls.objects.index(obj))
         obj.state = "to_delete"
@@ -89,7 +95,6 @@ class Object(IObject):
         if cls == Object:
             return cls.objects
         return (obj for obj in cls.objects if type(obj) == cls)
-        
 
     @classmethod
     def get(cls, *args, **kwargs):
@@ -98,7 +103,7 @@ class Object(IObject):
             for kwarg, value in kwargs.items():
                 key = f"_{kwarg}"
                 if key not in vars(obj).keys():
-                    raise AttributeError(f"'{cls}' don't have attribute '{arg}'!")
+                    raise AttributeError(f"'{cls}' don't have attribute '{key}'!")
                 elif value != vars(obj).get(key):
                     break
 
@@ -112,10 +117,10 @@ class Object(IObject):
             for kwarg, value in kwargs.items():
                 key = f"_{kwarg}"
                 if key not in vars(obj).keys():
-                    raise AttributeError(f"'{cls}' don't have attribute '{arg}'!")
+                    raise AttributeError(f"'{cls}' don't have attribute '{key}'!")
                 elif value != vars(obj).get(key):
                     found = False
-            
+
             if found:
                 yield obj
 
@@ -130,8 +135,19 @@ class GroupObject(Object, IGroupObject):
 
     model = Group
 
+    @classmethod
+    def create(cls, handler, *args, **kwargs):
+        a = super().create(handler, args, kwargs)
+
+        if cls == GroupObject:
+            a.hand = handler
+            a.position = handler.max_pos
+            handler.max_pos += 1
+        return a
+
     def __init__(self, *args, **kwargs):
         self.position = None
+        self.hand = None
         super().__init__(*args, **kwargs)
 
     @property
@@ -148,9 +164,17 @@ class GroupObject(Object, IGroupObject):
 
     @classmethod
     def delete(cls, obj, mark=False):
+        for lower in GroupObject.all():
+            if lower.position > obj.position:
+                print(lower.position)
+                lower.position -= 1
         for child in reversed(list(obj.children)):
+
             child.delete(child)
+
+        obj.hand.max_pos -= 1
         super().delete(obj, mark)
+
 
 class ActionObject(GroupObject, IActionObject):
 
