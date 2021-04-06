@@ -24,3 +24,6 @@ class ITimeDialog(ICoreDialog):
 
 class ICloseDialog(ICoreDialog):
     pass
+
+class IErrorDialog(ICoreDialog):
+    pass

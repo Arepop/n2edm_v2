@@ -65,13 +65,20 @@ class Object(IObject):
         return obj if check else None
 
     @classmethod
-    def update(cls, obj, *args, **kwargs):
-        for arg, value in kwargs.items():
-            if not hasattr(cls, arg):
-                raise TypeError(f"'{cls} attribute': '{arg}'' does not exist!")
-            setattr(obj, arg, value)
-        obj.state = "to_update"
-        return obj
+    def update(cls, handler, obj, *args, **kwargs):
+        old_name = obj.name
+        obj.name = kwargs.get("name")
+        check = handler(obj)
+        if check:
+            for arg, value in kwargs.items():
+                if not hasattr(cls, arg):
+                    raise TypeError(f"'{cls} attribute': '{arg}'' does not exist!")
+                setattr(obj, arg, value)
+    
+            obj.state = "to_update"
+        else:
+            obj.name = old_name
+        return obj# if check else None
 
     @classmethod
     def delete(cls, obj, mark=False):
@@ -147,7 +154,6 @@ class GroupObject(Object, IGroupObject):
 
     @classmethod
     def delete(cls, obj, mark=False):
-
         for child in reversed(list(obj.children)):
 
             child.delete(child)
@@ -191,11 +197,11 @@ class ActionObject(GroupObject, IActionObject):
 
     @property
     def stop_cmd(self):
-        return self._start_cmd
+        return self._stop_cmd
 
-    @start_cmd.setter
-    def stop_cmd(self, start_cmd):
-        self._start_cmd = start_cmd
+    @stop_cmd.setter
+    def stop_cmd(self, stop_cmd):
+        self._stop_cmd = stop_cmd
 
     @property
     def duration(self):

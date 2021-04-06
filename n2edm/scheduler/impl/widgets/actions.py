@@ -3,7 +3,7 @@ from PyQt5.QtCore import pyqtSignal as Signal
 
 from ....widgets.views import ActionsView, TreeView, SearchBarView
 from ....core.objects import GroupObject, ActionObject, Object
-from ....widgets.dialogs import ActionDialog, GroupDialog
+from ....widgets.dialogs import ActionDialog, GroupDialog, EditActionDialog
 from ....core.handlers import ActionHandler, GroupHandler
 
 
@@ -28,6 +28,9 @@ class Actions(ActionsView):
         self.main_layout.addWidget(self.tree)
 
 class Tree(TreeView):
+
+    SIG_create_actor = Signal(object)
+
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.create_view()
@@ -53,6 +56,12 @@ class Tree(TreeView):
         self.action_dialog.group_combo_box.activated.connect(lambda: self.open_group_creation_dialog(self.action_dialog))
         self.action_dialog.exec()
 
+    def open_action_edit_dialog(self):
+        obj = self.currentIndex().data(role=257)
+        self.edit_dialog = EditActionDialog(self, obj)
+        self.edit_dialog.SIG_edit_action.connect(lambda attributes, obj=obj: self.update_entry(attributes, obj))
+        self.edit_dialog.exec()
+
     def open_group_creation_dialog(self, action_dialog):
         if self.action_dialog.group_combo_box.currentText() == "Create...":
             group_dialog = GroupDialog(self)
@@ -64,8 +73,7 @@ class Tree(TreeView):
             action = ActionObject.create(self.action_handler, **attributes)
             self.model.populate()
         except NameError:
-            pass
-            # print("Action with error name exist")
+            raise NameError("Action with error name exist")
     
     def create_group(self, attributes):
         try:
@@ -73,11 +81,16 @@ class Tree(TreeView):
             self.action_dialog.group_combo_box.addItem(group.name, group)
             self.action_dialog.group_combo_box.setCurrentText(group.name)
         except NameError:
-            # print("Group with error name exist")
-            pass
+            raise NameError("Group with error name exist")
 
-    def update_entry(self, obj, attributes):
-        Object.update(obj, **attributes)
+    def update_entry(self, attributes, obj):
+        obj_name = obj.name
+        if type(obj) == ActionObject:
+            obj = ActionObject.update(self.action_handler, obj, **attributes)
+            self.model.update_action(obj, obj_name)
+        elif type(obj) == GroupObject:
+            obj = GroupObject.update(self.group_handler, obj, **attributes)
+            self.model.update_group(obj, obj_name)
 
     def delete_entry(self):
         """Remove selected group or action from tree
@@ -108,12 +121,26 @@ class Tree(TreeView):
         edit_action = QtWidgets.QAction("Edit...", self)
         del_action = QtWidgets.QAction("Delete...", self)
         add_action.triggered.connect(self.open_action_creation_dialog)
-        edit_action.triggered.connect(self.update_entry)
+        edit_action.triggered.connect(self.open_action_edit_dialog)
         del_action.triggered.connect(self.delete_entry)
         self.menu.addAction(add_action)
         self.menu.addAction(edit_action)
         self.menu.addAction(del_action)
         self.menu.popup(QtGui.QCursor.pos())
+
+    def mouseDoubleClickEvent(self, event: QtCore.QEvent) -> None:
+        """Overloaded method of mouseDoubleClickEvent. Emits signal with action (Adds actor).
+
+        Args:
+            event (QEvent): MouseClickEvent
+        """
+        action = self.currentIndex().data(role=257)
+        if action is None:
+            action = self.currentIndex().siblingAtColumn(
+                self.currentIndex().column()-1).data(role=257)
+
+        if isinstance(action, ActionObject):
+            self.SIG_create_actor.emit(action)
 
 
 class SearchBar(SearchBarView):
@@ -215,3 +242,15 @@ class StandardItemModel(QtGui.QStandardItemModel):
         group_item, = self.findItems(group.name) 
         self.removeRow(group_item.row())
 
+
+    def update_action(self, action, name):
+        item, = self.findItems(name) 
+        item, color_item = self.takeRow(item.row())
+        item.setText(action.name)
+        item.setData(action)
+        color_item.setBackground(QtGui.QBrush(
+            QtGui.QColor(action.color), QtCore.Qt.SolidPattern))
+        self.appendRow([item, color_item])
+
+    def update_group(self, group):
+        pass

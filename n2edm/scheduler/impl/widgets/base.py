@@ -19,3 +19,4 @@ class Base(BaseView):
 
     def connect_signals_with_slots(self):
         self.create_action.triggered.connect(self.actions.tree.open_action_creation_dialog)
+        self.actions.tree.SIG_create_actor.connect(self.scheduler.create_actor)

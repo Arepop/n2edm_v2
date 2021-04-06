@@ -36,13 +36,13 @@ class ActionDialog(CoreDialog):
         
         self.group = None
         self.name = None
-        self.start = None
-        self.stop = None
-        self.parameter = None
-        self.distance = None
+        self.start_cmd = None
+        self.stop_cmd = None
+        self.params = None
+        self.duration = None
         self.color = None
 
-        self.attr = ['group', 'name', 'start', 'stop', 'parameter', 'distance', 'color']
+        self.attr = ['group', 'name', 'start_cmd', 'stop_cmd', 'params', 'duration', 'color']
 
     def init_layout(self) -> None:
         """Initiate all layout for dialog
@@ -139,14 +139,14 @@ class ActionDialog(CoreDialog):
         """
         self.group = self.group_combo_box.currentData()
         self.name = self.action_name_line.text()
-        self.start = self.start_line.text()
-        self.stop = self.stop_line.text()
-        self.distance = self.time_distance_line.text()
-        self.parameter = self.parameter_line.text()
+        self.start_cmd = self.start_line.text()
+        self.stop_cmd = self.stop_line.text()
+        self.duration = self.time_distance_line.text()
+        self.params = self.parameter_line.text()
         self.color = self.color_button.color()
         attributes = {}
         for attr in self.attr:
-            attributes[attr] = getattr(self, attr)
+            attributes[attr] = getattr(self, attr) if getattr(self, attr) != "" else None
         self.SIG_create_action.emit(attributes)
 
     def cancel(self) -> None:
@@ -154,6 +154,45 @@ class ActionDialog(CoreDialog):
         """
         self.close()
 
+
+class EditActionDialog(ActionDialog):
+
+    SIG_edit_action = Signal(dict)
+
+    def __init__(self, parent: QtWidgets.QWidget, action) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Update Action")
+        self.confirm_button.setText('Update')
+        self.action = action
+        self.action_name_line.setText(self.action.name)
+        self.start_line.setText(self.action.start_cmd) 
+        self.stop_line.setText(self.action.stop_cmd)
+        self.time_distance_line.setText(self.action.duration) 
+        self.parameter_line.setText(self.action.params)
+        self.color_button.set_color(self.action.color)
+        self.confirm_button.clicked.connect(self.set_edit_data)
+
+
+    def fill_group_combo_box(self, groups=[]):
+        super().fill_group_combo_box(groups=groups)
+        self.group_combo_box.setCurrentText(self.action.group.name)
+
+    def set_edit_data(self) -> None:
+        """Reads action attributes and data from text fields and assign them with
+        uniqe ID for every action. Next data is emmited in signal.
+        """
+        self.group = self.group_combo_box.currentData()
+        self.name = self.action_name_line.text()
+        self.start_cmd = self.start_line.text()
+        self.stop_cmd = self.stop_line.text()
+        self.duration = self.time_distance_line.text()
+        self.params = self.parameter_line.text()
+        self.color = self.color_button.color()
+        attributes = {}
+        for attr in self.attr:
+            attributes[attr] = getattr(self, attr)
+        self.SIG_edit_action.emit(attributes)
+        self.close()
 
 class GroupDialog(CoreDialog):
     """GroupWizzard class. Dialog opens when user choses to create new group for actions.
@@ -251,3 +290,31 @@ class colorQPushButton(QtWidgets.QPushButton):
     def set_color(self, color):
         self.rgba = color
         self.setStyleSheet("QPushButton {background-color:%s;}" % color)
+
+
+class ErrorDialog(CoreDialog):
+    def __init__(self, exctype, value, traceback, traceback_string):
+        super().__init__(None)
+        self.resize(200, 50)
+        self.exectype = exctype
+        self.value = value
+        self.traceback = traceback
+        self.traceback_string = traceback_string
+
+        self.layout = QtWidgets.QVBoxLayout()
+        self.error_layout = QtWidgets.QHBoxLayout()
+        self.button_layout = QtWidgets.QHBoxLayout()
+        self.layout.addLayout(self.error_layout)
+        self.layout.addLayout(self.button_layout)
+        self.error_label = QtWidgets.QLabel(str(self.exectype))
+        self.error_info_label = QtWidgets.QLabel(str(self.value))
+        self.error_button = QtWidgets.QPushButton("Ok")
+
+        self.layout.addWidget(self.error_label)
+        self.layout.addWidget(self.error_info_label)
+        self.layout.addWidget(self.error_button)
+        self.error_button.clicked.connect(lambda: self.close())
+        self.setLayout(self.layout)
+
+    def traceback(self):
+        return self.traceback
