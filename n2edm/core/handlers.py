@@ -5,7 +5,6 @@ from .objects import *
 class Handler(IHandler):
 
     object_ = Object
-    max_pos = 0
 
     def __init__(self):
         self.no_object = 0
@@ -38,8 +37,29 @@ class GroupHandler(Handler, IGroupHandler):
     object_ = GroupObject
 
     def __init__(self, *args, **kwargs):
-
+        self.max_pos = 0
         super().__init__(*args, **kwargs)
+
+    @classmethod
+    def test2(cls, obj):
+        print("test")
+        for i in obj:
+            print(i.name)
+            print(i.position)
+
+    def set_position(self, obj):
+        obj.position = self.max_pos
+        self.max_pos += 1
+
+    def free_position(self, obj):
+
+        for lower in obj.all():
+            # print(lower.position)
+
+            if lower.position > obj.position and lower.hand == obj.hand:
+                print(lower.position)
+                lower.position -= 1
+        self.max_pos -= 1
 
     @classmethod
     def test(cls):

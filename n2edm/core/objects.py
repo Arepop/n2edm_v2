@@ -128,16 +128,6 @@ class GroupObject(Object, IGroupObject):
 
     model = Group
 
-    @classmethod
-    def create(cls, handler, *args, **kwargs):
-        a = super().create(handler, args, kwargs)
-
-        if cls == GroupObject:
-            a.hand = handler
-            a.position = handler.max_pos
-            handler.max_pos += 1
-        return a
-
     def __init__(self, *args, **kwargs):
         self.position = None
         self.hand = None
@@ -157,15 +147,11 @@ class GroupObject(Object, IGroupObject):
 
     @classmethod
     def delete(cls, obj, mark=False):
-        for lower in GroupObject.all():
-            if lower.position > obj.position:
-                print(lower.position)
-                lower.position -= 1
+
         for child in reversed(list(obj.children)):
 
             child.delete(child)
 
-        obj.hand.max_pos -= 1
         super().delete(obj, mark)
 
 
