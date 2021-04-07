@@ -109,6 +109,7 @@ class ActorHandler(Handler, IActorHandler):
             ):
                 raise ValueError("Time already in use!")
 
+
 class InfinitActorHandler(Handler, IInfinitActorHandler):
     object_ = InfinitActorObject
 
