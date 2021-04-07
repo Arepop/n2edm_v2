@@ -1,21 +1,19 @@
 from ..abstract.objects import *
 from ..models.models import *
-from copy import copy
-import random
-
 
 class Object(IObject):
 
     model = None
-    _set_id = None
+    set_id = None
     objects = []
     max_pos = 0
+    handler = None
 
     def __init__(self, *args, **kwargs):
         self.name = None
         self.pk = None
         self.state = None
-        Object._set_id = kwargs.get("set_id", id(Object))
+        Object.set_id = kwargs.get("set_id", id(Object))
 
         if args:
             (self.name) = args
@@ -55,9 +53,9 @@ class Object(IObject):
         self._name = name
 
     @classmethod
-    def create(cls, handler, *args, **kwargs):
+    def create(cls, *args, **kwargs):
         obj = cls(*args, **kwargs)
-        check = handler(obj)
+        check = cls.handler(obj)
         if check:
             obj.state = "to_create"
             cls.objects.append(obj)
@@ -65,10 +63,10 @@ class Object(IObject):
         return obj if check else None
 
     @classmethod
-    def update(cls, handler, obj, *args, **kwargs):
+    def update(cls, obj, *args, **kwargs):
         old_name = obj.name
         obj.name = kwargs.get("name")
-        check = handler(obj)
+        check = cls.handler(obj)
         if check:
             for arg, value in kwargs.items():
                 if not hasattr(cls, arg):
@@ -78,7 +76,7 @@ class Object(IObject):
             obj.state = "to_update"
         else:
             obj.name = old_name
-        return obj# if check else None
+        return obj # if check else None
 
     @classmethod
     def delete(cls, obj, mark=False):
@@ -105,15 +103,18 @@ class Object(IObject):
                 if key not in vars(obj).keys():
                     raise AttributeError(f"'{cls}' don't have attribute '{key}'!")
                 elif value != vars(obj).get(key):
+                    rv = None
                     break
-
-            rv = obj
+                else:
+                    rv = obj
+            if rv:
+                break        
         return rv
 
     @classmethod
     def filter(cls, *args, **kwargs):
-        found = True
         for obj in cls.all():
+            found = True
             for kwarg, value in kwargs.items():
                 key = f"_{kwarg}"
                 if key not in vars(obj).keys():
@@ -137,7 +138,6 @@ class GroupObject(Object, IGroupObject):
 
     def __init__(self, *args, **kwargs):
         self.position = None
-        self.hand = None
         super().__init__(*args, **kwargs)
 
     @property
@@ -155,9 +155,7 @@ class GroupObject(Object, IGroupObject):
     @classmethod
     def delete(cls, obj, mark=False):
         for child in reversed(list(obj.children)):
-
             child.delete(child)
-
         super().delete(obj, mark)
 
 

@@ -21,7 +21,7 @@ logger = logging.getLogger('n2edm')
 
 def exception_hook(exctype, value, traceback):
     traceback_formated = trs.format_exception(exctype, value, traceback)
-    traceback_string = "".join(traceback_formated)
+    traceback_string = "".join(traceback_formated) + "\n"
     dialog = ErrorDialog(exctype, value, traceback, traceback_string)
     logging.exception(traceback_string)    
     dialog.exec()

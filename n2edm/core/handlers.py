@@ -8,6 +8,7 @@ class Handler(IHandler):
 
     def __init__(self):
         self.no_object = 0
+        self.object_.handler = self
 
     def __call__(self, obj):
         return self.check_unique(obj)
@@ -39,6 +40,8 @@ class GroupHandler(Handler, IGroupHandler):
     def __init__(self, *args, **kwargs):
         self.max_pos = 0
         super().__init__(*args, **kwargs)
+        self.object_.handler = self
+        
 
     def set_position(self, obj):
         obj.position = self.max_pos
@@ -61,11 +64,17 @@ class GroupHandler(Handler, IGroupHandler):
 
 class ActionHandler(Handler, IActionHandler):
     object_ = ActionObject
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.object_.handler = self
 
 class ActorHandler(Handler, IActorHandler):
 
     object_ = ActorObject
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.object_.handler = self
 
     @classmethod
     def check(cls, obj):
@@ -90,7 +99,7 @@ class ActorHandler(Handler, IActorHandler):
                 or (old_obj.start >= obj.start and old_obj.start <= obj.stop)
                 or (old_obj.stop >= obj.stop and old_obj.stop <= obj.stop)
             ):
-                raise ValueError("Time already in use!")
+                raise ValueError("Time already in use!") 
 
 
 class InfinitActorHandler(Handler, IInfinitActorHandler):

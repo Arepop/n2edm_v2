@@ -6,7 +6,7 @@ class Group(models.Model):
 
     set_id = models.TextField()
     name = models.TextField()
-    position = models.IntegerField()
+    position = models.IntegerField(null=True)
     # max_pos = models.IntegerField()
 
 
@@ -21,7 +21,7 @@ class Action(models.Model):
     duration = models.IntegerField()
     params = models.TextField()
     color = models.TextField()
-    position = models.IntegerField()
+    position = models.IntegerField(null=True)
 
 
 class Actor(models.Model):
@@ -44,4 +44,4 @@ class TimelineActor(models.Model):
 
 
 class InfinityActor(models.Model):
-    pass
+    set_id = models.TextField()

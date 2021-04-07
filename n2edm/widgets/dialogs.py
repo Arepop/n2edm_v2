@@ -141,7 +141,7 @@ class ActionDialog(CoreDialog):
         self.name = self.action_name_line.text()
         self.start_cmd = self.start_line.text()
         self.stop_cmd = self.stop_line.text()
-        self.duration = self.time_distance_line.text()
+        self.duration = int(self.time_distance_line.text())
         self.params = self.parameter_line.text()
         self.color = self.color_button.color()
         attributes = {}
@@ -167,7 +167,7 @@ class EditActionDialog(ActionDialog):
         self.action_name_line.setText(self.action.name)
         self.start_line.setText(self.action.start_cmd) 
         self.stop_line.setText(self.action.stop_cmd)
-        self.time_distance_line.setText(self.action.duration) 
+        self.time_distance_line.setText(str(self.action.duration)) 
         self.parameter_line.setText(self.action.params)
         self.color_button.set_color(self.action.color)
         self.confirm_button.clicked.connect(self.set_edit_data)
@@ -185,7 +185,7 @@ class EditActionDialog(ActionDialog):
         self.name = self.action_name_line.text()
         self.start_cmd = self.start_line.text()
         self.stop_cmd = self.stop_line.text()
-        self.duration = self.time_distance_line.text()
+        self.duration = int(self.time_distance_line.text())
         self.params = self.parameter_line.text()
         self.color = self.color_button.color()
         attributes = {}
@@ -318,3 +318,7 @@ class ErrorDialog(CoreDialog):
 
     def traceback(self):
         return self.traceback
+
+
+# class DiffDialog(CoreDialog):
+#     def __init__(self, )

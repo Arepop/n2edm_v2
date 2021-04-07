@@ -34,8 +34,6 @@ class Tree(TreeView):
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.create_view()
-        self.action_handler = ActionHandler()
-        self.group_handler = GroupHandler()
 
     def create_view(self):
         self.model = StandardItemModel(self)
@@ -70,14 +68,14 @@ class Tree(TreeView):
 
     def create_action(self, attributes):
         try:
-            action = ActionObject.create(self.action_handler, **attributes)
+            action = ActionObject.create(**attributes)
             self.model.populate()
         except NameError:
             raise NameError("Action with error name exist")
     
     def create_group(self, attributes):
         try:
-            group = GroupObject.create(self.group_handler, **attributes)
+            group = GroupObject.create(**attributes)
             self.action_dialog.group_combo_box.addItem(group.name, group)
             self.action_dialog.group_combo_box.setCurrentText(group.name)
         except NameError:
@@ -86,19 +84,21 @@ class Tree(TreeView):
     def update_entry(self, attributes, obj):
         obj_name = obj.name
         if type(obj) == ActionObject:
-            obj = ActionObject.update(self.action_handler, obj, **attributes)
+            obj = ActionObject.update(obj, **attributes)
             self.model.update_action(obj, obj_name)
         elif type(obj) == GroupObject:
-            obj = GroupObject.update(self.group_handler, obj, **attributes)
+            obj = GroupObject.update(obj, **attributes)
             self.model.update_group(obj, obj_name)
 
     def delete_entry(self):
         """Remove selected group or action from tree
         """
         item = self.currentIndex().data(role=257)
+        proxy_index = self.currentIndex()
+        model_index = self.proxy_model.mapToSource(proxy_index)
         item.delete(item)
         if type(item) == ActionObject:
-            self.model.remove_action(item)
+            self.model.remove_action(item, model_index)
         else:
             self.model.remove_group(item)
 
@@ -142,6 +142,8 @@ class Tree(TreeView):
         if isinstance(action, ActionObject):
             self.SIG_create_actor.emit(action)
 
+    def sync_with_db(self, statement):
+        self.model.populate()
 
 class SearchBar(SearchBarView):
     search_sig = Signal(str)
@@ -229,19 +231,18 @@ class StandardItemModel(QtGui.QStandardItemModel):
         item.setEditable(False)
         color_item.setEditable(False)
 
-    def remove_action(self, action):
+    def remove_action(self, action, index):
         if action.group:
             group_item, = self.findItems(action.group.name) 
-            item, = group_item.findItems(action.name)
+            item = self.itemFromIndex(index)
             group_item.removeRow(item.row())
         else:
-            item, = self.findItems(action.name) 
+            item, = self.findItems(action.name)
             self.removeRow(item.row())
 
     def remove_group(self, group):
         group_item, = self.findItems(group.name) 
         self.removeRow(group_item.row())
-
 
     def update_action(self, action, name):
         item, = self.findItems(name) 

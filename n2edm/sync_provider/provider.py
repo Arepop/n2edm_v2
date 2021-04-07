@@ -1,5 +1,5 @@
 from ..core.objects import *
-
+from ..core.handlers import *
 
 class SyncProvider:
     def __init__(self):
@@ -8,7 +8,8 @@ class SyncProvider:
         self.passwd = None
         self.adress = None
         self.synced = False
-        self.sync_time = "now"
+        self.pull = None
+        self.sync_time = "now"        
 
     def connect(self, adress):
         self.adress = adress
@@ -17,6 +18,7 @@ class SyncProvider:
     def sync(self):
         if not self.auth:
             raise ConnectionError("Could not connect to server")
+        self.pull = self.pull_and_compare()
         self.push()
 
     def pull_and_compare(self):
@@ -28,24 +30,28 @@ class SyncProvider:
                 yield self.compare(elem, attributes)
 
     def compare(self, elem, attributes):
-        try:
-            obj = elem.get(pk=attributes["pk"])
-        except IndexError as e:
+        """
+        To be implemented in v 2.1.0
+        """
+        pass 
+
+    def pull_and_overwrite(self):
+        objects_classes = [GroupObject, ActionObject, ActorObject] #TODO: When InfinityActor and TimelineActor are ready update this
+        for elem in objects_classes:
+            for obj in elem.model.objects.all():
+                attributes = vars(obj)
+                self.to_n2edm_objects(attributes)
+                self.overwrite(elem, attributes)
+
+    def overwrite(self, elem, attributes):
+        obj = elem.get(pk=attributes["pk"])
+        if obj == None:
             obj = elem.create(**attributes)
             obj.state = None
-            return
+    
+        else:
+            elem.update(obj, **attributes)
 
-        obj._set_id = attributes["set_id"]
-        
-        for key, value in attributes.items():
-            if getattr(obj, key) != value:
-                choice = yield
-                if choice == "R":
-                    setattr(obj, key, value)
-        
-        if choice:
-            obj.state = "to_update"
-        return obj
 
 
     def push(self):
@@ -54,34 +60,35 @@ class SyncProvider:
             db_obj = obj.model.objects.create(**attributes)
             obj.state = None
             obj.pk = db_obj.id
-        
+
         for obj in Object.filter(state="to_update"):
             attributes = self.get_attributes(obj)
             db_obj = obj.model.objects.filter(id=obj.pk).update(**attributes)
             obj.state = None
 
         for obj in Object.filter(state="to_delete"):
-            obj.delete(id=obj.pk, mark=True)
+            obj.delete(obj, mark=True)
             if obj.pk != None:
                 obj.model.objects.get(pk=obj.pk).delete()
+
 
     def get_n2edm_model(self, obj):
         return obj.model.objects.get(pk=obj.pk)
 
     def to_n2edm_models(self, attributes):
-        if "group" in  attributes.keys():
+        if attributes.get("group"):
             attributes["group"] = self.get_n2edm_model(attributes["group"])
-        if "action" in attributes.keys():
+        if attributes.get("action"):
             attributes["action"] = self.get_n2edm_model(attributes["action"])
 
     def to_n2edm_objects(self, attributes):
         if "group_id" in attributes.keys():
-            attributes['group'] = GroupObject.get(pk=attributes["group_id"])
+            attributes['group'] = GroupObject.get(pk=attributes.get("group_id"))
             del attributes["group_id"]
-        if "action_id" in attributes.keys():
-            attributes['action_id'] = ActionObject.get(pk=attributes["action_id"])
-            del attributes["action_id"]
 
+        if "action_id" in attributes.keys():
+            attributes['action'] = ActionObject.get(pk=attributes.get("action_id"))
+            del attributes["action_id"]
 
         attributes["pk"] = attributes.pop("id")
         del attributes["_state"]
@@ -91,7 +98,7 @@ class SyncProvider:
         for key, value in vars(obj).items():
             attributes[key.strip("_")] = value
 
-        attributes["set_id"] = obj._set_id
+        attributes["set_id"] = obj.set_id
 
         del attributes["pk"]
         del attributes["state"]
