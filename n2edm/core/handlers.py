@@ -40,13 +40,6 @@ class GroupHandler(Handler, IGroupHandler):
         self.max_pos = 0
         super().__init__(*args, **kwargs)
 
-    @classmethod
-    def test2(cls, obj):
-        print("test")
-        for i in obj:
-            print(i.name)
-            print(i.position)
-
     def set_position(self, obj):
         obj.position = self.max_pos
         self.max_pos += 1
@@ -54,19 +47,10 @@ class GroupHandler(Handler, IGroupHandler):
     def free_position(self, obj):
 
         for lower in obj.all():
-            # print(lower.position)
 
             if lower.position > obj.position and lower.hand == obj.hand:
-                print(lower.position)
                 lower.position -= 1
         self.max_pos -= 1
-
-    @classmethod
-    def test(cls):
-        print("test")
-        for i in GroupObject.all():
-            print(i.name)
-            print(i.position)
 
     @classmethod
     def swap_position(cls, obj1, obj2):
@@ -86,7 +70,6 @@ class ActorHandler(Handler, IActorHandler):
     @classmethod
     def check(cls, obj):
 
-        # cls.check_unique(obj)
         cls.time_check(obj)
 
         return True
@@ -129,7 +112,7 @@ class InfinitActorHandler(Handler, IInfinitActorHandler):
 
         for old_obj in cls.object_.filter(group=obj.group):
             if old_obj.start == obj.start:
-                raise ValueError("Cant fit")
+                raise ValueError("You can't create infinity actor with this start")
 
         return True
 
