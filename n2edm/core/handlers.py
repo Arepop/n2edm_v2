@@ -5,10 +5,11 @@ from .objects import *
 class Handler(IHandler):
 
     object_ = Object
+    max_pos = 0
 
     def __init__(self):
         self.no_object = 0
-        self.max_pos = 0
+        Handler.max_pos = 0
         self.object_.handler = self
 
     def __call__(self, obj):
@@ -39,13 +40,13 @@ class GroupHandler(Handler, IGroupHandler):
     object_ = GroupObject
 
     def __init__(self, *args, **kwargs):
-        self.max_pos = 0
+        Handler.max_pos = 0
         super().__init__(*args, **kwargs)
         self.object_.handler = self
 
     def set_position(self, obj):
-        obj.position = self.max_pos
-        self.max_pos += 1
+        obj.position = Handler.max_pos
+        Handler.max_pos += 1
 
     def free_position(self, obj):
 
@@ -53,7 +54,7 @@ class GroupHandler(Handler, IGroupHandler):
 
             if lower.position > obj.position and lower.hand == obj.hand:
                 lower.position -= 1
-        self.max_pos -= 1
+        Handler.max_pos -= 1
 
     @classmethod
     def swap_position(cls, obj1, obj2):
@@ -70,12 +71,8 @@ class ActionHandler(Handler, IActionHandler):
         self.object_.handler = self
 
     def set_position(self, obj):
-        print("set")
-        print(obj.name)
-        for i in obj.all():
-            print(i.name)
-        obj.position = self.max_pos
-        self.max_pos += 1
+        obj.position = Handler.max_pos
+        Handler.max_pos += 1
 
     def free_position(self, obj):
 
@@ -83,7 +80,7 @@ class ActionHandler(Handler, IActionHandler):
 
             if lower.position > obj.position and lower.hand == obj.hand:
                 lower.position -= 1
-        self.max_pos -= 1
+        Handler.max_pos -= 1
 
     @classmethod
     def swap_position(cls, obj1, obj2):
@@ -103,20 +100,14 @@ class ActorHandler(Handler, IActorHandler):
     @classmethod
     def check(cls, obj):
 
-        cls.time_check(obj)
-
         return True
 
     def __call__(self, obj):
         return self.check(obj)
 
     def set_position(self, obj):
-        print("set")
-        print(obj.name)
-        for i in obj.all():
-            print(i.name)
-        obj.position = self.max_pos
-        self.max_pos += 1
+        obj.position = Handler.max_pos
+        Handler.max_pos += 1
 
     def free_position(self, obj):
 
@@ -124,10 +115,10 @@ class ActorHandler(Handler, IActorHandler):
 
             if lower.position > obj.position and lower.hand == obj.hand:
                 lower.position -= 1
-        self.max_pos -= 1
+        Handler.max_pos -= 1
 
     def __init__(self, *args, **kwargs):
-        self.max_pos = 0
+        Handler.max_pos = 0
         super().__init__(*args, **kwargs)
 
     @classmethod
@@ -138,9 +129,6 @@ class ActorHandler(Handler, IActorHandler):
 
     @classmethod
     def time_check(cls, obj):
-        for old in obj.filter(group=obj.group):
-            print("dah")
-            print(old.name)
 
         for old_obj in obj.filter(group=obj.group):
             if old_obj == obj:

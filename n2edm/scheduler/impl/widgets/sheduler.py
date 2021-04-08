@@ -24,6 +24,7 @@ from ....core.handlers import ActorHandler
 from ....core.handlers import ActionHandler
 from ....core.handlers import GroupHandler
 from ....core.handlers import Handler
+from ....core.handlers import InfinitActorHandler
 
 
 class Scheduler(SchedulerView):
@@ -39,6 +40,10 @@ class Scheduler(SchedulerView):
         self.handler = Handler()
         self.actor_handler = ActorHandler()
         self.action_handler = ActionHandler()
+        self.infinit_actor_handler = InfinitActorHandler()
+        self.infinit_actor = InfinitActorObject(
+            self.action_handler, name="infinit_action", start=10, group=self.group
+        )
         self.action = ActionObject.create(
             self.action_handler, name="action", group=self.group
         )
@@ -53,36 +58,25 @@ class Scheduler(SchedulerView):
             action_handler=self.action_handler, name="action3"
         )
 
-        self.group_handler.set_position(self.group)
-        self.group_handler.set_position(self.group2)
-
-        print("grupu0")
-        print(self.action4.action_handler)
-        print(self.action2.group.position)
-        print(self.action3.group.position)
-
-        new = self.create_actor(self.action, 1, 2)
-        new2 = self.create_actor(self.action2, 3, 4)
-        new3 = self.create_actor(self.action3, 1, 2)
-        new4 = self.create_actor(self.action4, 11, 12)
+        self.action5 = ActionObject.create(
+            action_handler=self.action_handler, name="action4"
+        )
 
         self.group_handler.set_position(self.group)
         self.group_handler.set_position(self.group2)
 
-        # new2.start = 10
-        # new2.stop = 20
+        self.new = self.create_actor(self.action, 1, 2)
+        self.new2 = self.create_actor(self.action2, 3, 4)
+        self.new3 = self.create_actor(self.action3, 1, 2)
+        self.new4 = self.create_actor(self.action4, 11, 122)
+        self.new5 = self.create_actor(self.action5, 13, 152)
 
-        # print(new.start)
-        print("asda")
-        # self.ah.set_position(actor2)
-
-        # self.ah.set_position(actor)
-        self.draw_actor(new)
-        self.draw_actor(new2)
-        self.draw_actor(new3, color="red")
-        self.draw_actor(new4, color="red")
-
-        # self.draw_actor(actor2, color="red")
+        self.draw_actor(self.new)
+        self.draw_actor(self.new2)
+        self.draw_actor(self.new3, color="red")
+        self.draw_actor(self.new4, color="green")
+        self.draw_actor(self.new5, color="yellow")
+        self.draw_infinit_actor(self.infinit_actor)
 
         self.canvas.draw()
 
@@ -94,10 +88,26 @@ class Scheduler(SchedulerView):
         outline = mpe.withStroke(linewidth=1.1, capstyle="projecting")
 
         (line2d,) = plt.plot(
-            # [actor_handler.object_.start, actor_handler.object_.stop],
-            # [actor_handler.object_, 3],
             [actor.start, actor.stop],
             [actor.position, actor.position],
+            lw=WIDTH,
+            color=color,
+            pickradius=5,
+            ms=0,
+        )
+
+        line2d.set_path_effects([outline])
+
+    def draw_infinit_actor(self, actor, color="blue"):
+        bbox = self.ax.get_window_extent().transformed(
+            self.figure.dpi_scale_trans.inverted()
+        )
+        WIDTH = 2 * bbox.height
+        outline = mpe.withStroke(linewidth=1.1, capstyle="projecting")
+
+        (line2d,) = plt.plot(
+            [actor.start, self.ax.get_xlim()[1]],
+            [actor.group.position, actor.group.position],
             lw=WIDTH,
             color=color,
             pickradius=5,
@@ -155,26 +165,16 @@ class Scheduler(SchedulerView):
             # tutaj ma być position,jeśli jest None to ma wybrać sobie nową
         }
         if action.group == None:
-            for i in GroupObject.all():
-                print(i.name)
-            print(action.action_handler.max_pos)
-            print("tutu")
-            # print(self.action.action_handler.)
-            attributes["position"] = action.position
-            print(attributes["position"])
+            attributes["position"] = Handler.max_pos
+            Handler.max_pos += 1
 
         else:
-            print("tamtam")
             attributes["position"] = action.group.position
-            print(attributes["position"])
 
         # tutaj powinien znajdować się qt dialog z pytaniem o start i stop
         attributes["start"] = a
         attributes["stop"] = b
 
         actor = ActorObject.create(self.actor_handler, **attributes)
-        return actor
 
-    # mathplotlib py plot
-    # plt.plot(x1,x2,y1,y2,)
-    # self.canvas.draw()
+        return actor
