@@ -1,6 +1,7 @@
 from ..abstract.objects import *
 from ..models.models import *
 
+
 class Object(IObject):
 
     model = None
@@ -59,7 +60,7 @@ class Object(IObject):
         if check:
             obj.state = "to_create"
             cls.objects.append(obj)
-        cls.max_pos += 1
+        # cls.max_pos += 1
         return obj if check else None
 
     @classmethod
@@ -72,11 +73,11 @@ class Object(IObject):
                 if not hasattr(cls, arg):
                     raise TypeError(f"'{cls} attribute': '{arg}'' does not exist!")
                 setattr(obj, arg, value)
-    
+
             obj.state = "to_update"
         else:
             obj.name = old_name
-        return obj # if check else None
+        return obj  # if check else None
 
     @classmethod
     def delete(cls, obj, mark=False):
@@ -108,7 +109,7 @@ class Object(IObject):
                 else:
                     rv = obj
             if rv:
-                break        
+                break
         return rv
 
     @classmethod
@@ -171,6 +172,7 @@ class ActionObject(GroupObject, IActionObject):
         self.color = None
         self.params = None
         self.position = None
+        self.action_handler = None
         super().__init__(*args, **kwargs)
 
     @property
@@ -239,6 +241,7 @@ class ActorObject(Object, IActorObject):
         self.stop = None
         self.annotate = None
         self.text = None
+        self.position = None
         super().__init__(*args, **kwargs)
 
     @property
