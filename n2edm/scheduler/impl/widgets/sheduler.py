@@ -20,11 +20,7 @@ from ....core.objects import (
     TimelineObject,
     InfinitActorObject,
 )
-from ....core.handlers import ActorHandler
-from ....core.handlers import ActionHandler
-from ....core.handlers import GroupHandler
-from ....core.handlers import Handler
-from ....core.handlers import InfinitActorHandler
+from ....core.handlers import *
 
 
 class Scheduler(SchedulerView):
@@ -38,47 +34,34 @@ class Scheduler(SchedulerView):
         self.group2 = GroupObject.create(self.group_handler, name="mojagrupa2")
 
         self.handler = Handler()
+        self.seq_handler = SequenceHandler("file")
         self.actor_handler = ActorHandler()
         self.action_handler = ActionHandler()
         self.infinit_actor_handler = InfinitActorHandler()
-        self.infinit_actor = InfinitActorObject(
-            self.action_handler, name="infinit_action", start=10, group=self.group
-        )
-        self.action = ActionObject.create(
-            self.action_handler, name="action", group=self.group
+
+        self.action1 = ActionObject.create(
+            name="name1", duration=20, start_cmd="act1_cmd", stop_cmd="act1_stop_cmd"
         )
         self.action2 = ActionObject.create(
-            action_handler=self.action_handler, name="action2", group=self.group
+            name="name2", duration=20, start_cmd="act2_cmd", stop_cmd="act2_stop_cmd"
         )
         self.action3 = ActionObject.create(
-            action_handler=self.action_handler, name="action3", group=self.group2
+            name="name3", duration=30, start_cmd="act3_cmd", stop_cmd="act3_stop_cmd"
         )
 
-        self.action4 = ActionObject.create(
-            action_handler=self.action_handler, name="action3"
+        self.actor1 = ActorObject.create(
+            name="act1", start=1, stop=2, action=self.action1
         )
 
-        self.action5 = ActionObject.create(
-            action_handler=self.action_handler, name="action4"
+        self.actor2 = ActorObject.create(
+            name="act2", start=23, stop=26, action=self.action2
         )
 
-        self.group_handler.set_position(self.group)
-        self.group_handler.set_position(self.group2)
+        self.actor3 = ActorObject.create(
+            name="act3", start=1, stop=32, action=self.action3
+        )
 
-        self.new = self.create_actor(self.action, 1, 2)
-        self.new2 = self.create_actor(self.action2, 3, 4)
-        self.new3 = self.create_actor(self.action3, 1, 2)
-        self.new4 = self.create_actor(self.action4, 11, 122)
-        self.new5 = self.create_actor(self.action5, 13, 152)
-
-        self.draw_actor(self.new)
-        self.draw_actor(self.new2)
-        self.draw_actor(self.new3, color="red")
-        self.draw_actor(self.new4, color="green")
-        self.draw_actor(self.new5, color="yellow")
-        self.draw_infinit_actor(self.infinit_actor)
-
-        self.canvas.draw()
+        self.seq_handler.update_sequence()
 
     def draw_actor(self, actor, color="blue"):
         bbox = self.ax.get_window_extent().transformed(
@@ -176,5 +159,5 @@ class Scheduler(SchedulerView):
         attributes["stop"] = b
 
         actor = ActorObject.create(self.actor_handler, **attributes)
-
+        self.seq_handler.update_sequence()
         return actor

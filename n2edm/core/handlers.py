@@ -177,3 +177,27 @@ class InfinitActorHandler(Handler, IInfinitActorHandler):
     def check(cls, obj):
         cls.check_unique(obj)
         cls.fit_check(obj)
+
+
+class SequenceHandler:
+    def __init__(self, name):
+        self.name = name
+        with open(name, "w") as file:
+            pass
+
+    def decode(self):
+        commands_list = []
+        for actor in ActorObject.all():
+            commands_list.append((actor.start, actor.action.start_cmd))
+            commands_list.append((actor.stop, actor.action.stop_cmd))
+
+        commands_list.sort(key=self.sort_criteria)
+        rv_list = [_[1] + "\n" for _ in commands_list]
+        return rv_list
+
+    def sort_criteria(self, command):
+        return command[0]
+
+    def update_sequence(self):
+        with open(self.name, "w") as file:
+            file.writelines(self.decode())
