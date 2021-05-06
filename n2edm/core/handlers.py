@@ -187,13 +187,23 @@ class SequenceHandler:
 
     def decode(self):
         commands_list = []
+        llist = []
         for actor in ActorObject.all():
             commands_list.append((actor.start, actor.action.start_cmd))
             commands_list.append((actor.stop, actor.action.stop_cmd))
 
         commands_list.sort(key=self.sort_criteria)
+        # print(commands_list)
+        h = commands_list[0][0]
+        llist.append("sleep:" + str(h) + "\n")
+        for line in commands_list:
+            if line[0] != h:
+                llist.append("sleep" + str(line[0] - int(h)) + "\n")
+                h = line[0]
+            llist.append(line[1] + "\n")
+        print(llist)
         rv_list = [_[1] + "\n" for _ in commands_list]
-        return rv_list
+        return llist
 
     def sort_criteria(self, command):
         return command[0]
