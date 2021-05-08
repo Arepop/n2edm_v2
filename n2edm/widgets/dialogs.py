@@ -1,6 +1,8 @@
 from PyQt5 import Qt, QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal as Signal
 
+from .helpers import colorQPushButton
+
 class CoreDialog(QtWidgets.QDialog):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
@@ -172,10 +174,10 @@ class EditActionDialog(ActionDialog):
         self.color_button.set_color(self.action.color)
         self.confirm_button.clicked.connect(self.set_edit_data)
 
-
     def fill_group_combo_box(self, groups=[]):
         super().fill_group_combo_box(groups=groups)
-        self.group_combo_box.setCurrentText(self.action.group.name)
+        if self.action.group:
+            self.group_combo_box.setCurrentText(self.action.group.name)
 
     def set_edit_data(self) -> None:
         """Reads action attributes and data from text fields and assign them with
@@ -272,26 +274,6 @@ class GroupDialog(CoreDialog):
         """
         self.close()
 
-
-class colorQPushButton(QtWidgets.QPushButton):
-    def __init__(self, name):
-        super().__init__()
-        self.rgba = "#000000"
-        self.setStyleSheet("QPushButton {background-color:%s;}" % self.rgba)
-
-    def mousePressEvent(self, event):
-        self.q_color = QtWidgets.QColorDialog.getColor()
-        self.rgba = self.q_color.name()
-        self.setStyleSheet("QPushButton {background-color:%s;}" % self.rgba)
-
-    def color(self):
-        return self.rgba
-
-    def set_color(self, color):
-        self.rgba = color
-        self.setStyleSheet("QPushButton {background-color:%s;}" % color)
-
-
 class ErrorDialog(CoreDialog):
     def __init__(self, exctype, value, traceback, traceback_string):
         super().__init__(None)
@@ -320,5 +302,46 @@ class ErrorDialog(CoreDialog):
         return self.traceback
 
 
-# class DiffDialog(CoreDialog):
-#     def __init__(self, )
+class DiffDialog(CoreDialog):
+    def __init__(self, obj, attributes):
+        super().__init__(self)
+        # self.resize(200, 50)
+
+    def init_layout(self) -> None:
+        """Initiate all layout for dialog
+
+        Returns:
+            None
+        """
+        self.layout = QtWidgets.QVBoxLayout()
+        self.button_line_layout = QtWidgets.QHBoxLayout()
+        self.layout.addLayout(self.button_line_layout)
+        self.setLayout(self.layout)
+
+    def init_widgets(self) -> None:
+        """Initiate all main widgets in main window
+
+        Returns:
+            None
+        """
+        self.scroll_area = QtWidgets.QScrollArea()
+        self.tree_view = QtWidgets.QTreeWidget()        
+        self.confirm_button = QtWidgets.QPushButton("Create")
+        self.cancel_button = QtWidgets.QPushButton("Cancel")
+        self.button_line_layout.addWidget(self.confirm_button)
+        self.button_line_layout.addWidget(self.cancel_button)
+        self.status_bar = QtWidgets.QStatusBar()
+        self.layout.addWidget(self.status_bar)
+
+    def check_differences(self, obj, attributes):
+        pass
+
+    def next_diff(self, iter):
+        pass
+
+    def prev_diff(self, iter):
+        pass
+
+    def select_diff(self, diff_line):
+        pass
+

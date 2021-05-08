@@ -4,7 +4,7 @@ from django.db import models
 class Group(models.Model):
     """Model of Group for database storage"""
 
-    set_id = models.TextField()
+    set_id = models.TextField(default=0)
     name = models.TextField()
     position = models.IntegerField(null=True)
     # max_pos = models.IntegerField()
@@ -13,7 +13,7 @@ class Group(models.Model):
 class Action(models.Model):
     """Model of Action for database storaget"""
 
-    set_id = models.TextField()
+    set_id = models.TextField(default=0)
     name = models.TextField()
     group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True)
     start_cmd = models.TextField()
@@ -27,7 +27,7 @@ class Action(models.Model):
 class Actor(models.Model):
     """Model of Actor for database storage"""
 
-    set_id = models.TextField()
+    set_id = models.TextField(default=0)
     name = models.TextField()
     group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True)
     action = models.ForeignKey(Action, on_delete=models.CASCADE)
@@ -40,8 +40,8 @@ class Actor(models.Model):
 
 
 class TimelineActor(models.Model):
-    set_id = models.TextField()
+    set_id = models.TextField(default=0)
 
 
 class InfinityActor(models.Model):
-    set_id = models.TextField()
+    set_id = models.TextField(default=0)

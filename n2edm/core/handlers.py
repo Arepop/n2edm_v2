@@ -5,11 +5,11 @@ from .objects import *
 class Handler(IHandler):
 
     object_ = Object
-    max_pos = 0
+    current_position = 0
 
     def __init__(self):
         self.no_object = 0
-        Handler.max_pos = 0
+        Handler.current_position = 0
         self.object_.handler = self
 
     def __call__(self, obj):
@@ -21,13 +21,13 @@ class Handler(IHandler):
             for other_obj in cls.object_.filter(name=obj.name):
                 if obj.name == other_obj.name and obj != other_obj:
                     raise NameError(
-                        "Object with that name alredy exist in that set. Choose different name"
+                        "Group with that name alredy exist in that set. Choose different name"
                     )
         else:
             for other_obj in cls.object_.filter(group=obj.group):
                 if obj.name == other_obj.name and obj != other_obj:
                     raise NameError(
-                        "Object with that name alredy exist in that set. Choose different name"
+                        f"{cls} with that name alredy exist in that set. Choose different name"
                     )
 
         return True
@@ -44,9 +44,10 @@ class GroupHandler(Handler, IGroupHandler):
         super().__init__(*args, **kwargs)
         self.object_.handler = self
 
-    def set_position(self, obj):
-        obj.position = Handler.max_pos
-        Handler.max_pos += 1
+    @classmethod
+    def set_position(cls, obj):
+        obj.position = Handler.current_position
+        Handler.current_position += 1
 
     def free_position(self, obj):
 
@@ -54,7 +55,7 @@ class GroupHandler(Handler, IGroupHandler):
 
             if lower.position > obj.position and lower.hand == obj.hand:
                 lower.position -= 1
-        Handler.max_pos -= 1
+        Handler.current_position -= 1
 
     @classmethod
     def swap_position(cls, obj1, obj2):
@@ -70,9 +71,10 @@ class ActionHandler(Handler, IActionHandler):
         super().__init__(*args, **kwargs)
         self.object_.handler = self
 
-    def set_position(self, obj):
-        obj.position = Handler.max_pos
-        Handler.max_pos += 1
+    @classmethod
+    def set_position(cls, obj):
+        obj.position = Handler.current_position
+        Handler.current_position += 1
 
     def free_position(self, obj):
 
@@ -80,7 +82,7 @@ class ActionHandler(Handler, IActionHandler):
 
             if lower.position > obj.position and lower.hand == obj.hand:
                 lower.position -= 1
-        Handler.max_pos -= 1
+        Handler.current_position -= 1
 
     @classmethod
     def swap_position(cls, obj1, obj2):
@@ -99,26 +101,12 @@ class ActorHandler(Handler, IActorHandler):
 
     @classmethod
     def check(cls, obj):
-
         return True
 
     def __call__(self, obj):
         return self.check(obj)
 
-    def set_position(self, obj):
-        obj.position = Handler.max_pos
-        Handler.max_pos += 1
-
-    def free_position(self, obj):
-
-        for lower in obj.all():
-
-            if lower.position > obj.position and lower.hand == obj.hand:
-                lower.position -= 1
-        Handler.max_pos -= 1
-
     def __init__(self, *args, **kwargs):
-        Handler.max_pos = 0
         super().__init__(*args, **kwargs)
 
     @classmethod
@@ -141,6 +129,20 @@ class ActorHandler(Handler, IActorHandler):
                 or (old_obj.stop >= obj.stop and old_obj.stop <= obj.stop)
             ):
                 raise ValueError("Time already in use!")
+
+
+    @classmethod
+    def calculate_vertical_position(cls, obj):
+        maximum_position = 0
+        if obj.action.group == None and len(list(ActorObject.filter(action=obj.action))):
+            maximum_position = max(actor.stop for actor in ActorObject.filter(action=obj.action))
+        elif len(list(ActorObject.filter(group=obj.group))):
+            maximum_position = max(actor.stop for actor in ActorObject.filter(group=obj.group))
+
+        obj.start = maximum_position
+        obj.stop = maximum_position + obj.action.duration
+
+        return obj
 
 
 class InfinitActorHandler(Handler, IInfinitActorHandler):
@@ -192,7 +194,7 @@ class SequenceHandler:
             commands_list.append((actor.stop, actor.action.stop_cmd))
 
         commands_list.sort(key=self.sort_criteria)
-        rv_list = [_[1] + "\n" for _ in commands_list]
+        rv_list = [str(_) + "\n" for _ in commands_list]
         return rv_list
 
     def sort_criteria(self, command):

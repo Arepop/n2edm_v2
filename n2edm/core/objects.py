@@ -1,12 +1,12 @@
 from ..abstract.objects import *
 from ..models.models import *
 
-
 class Object(IObject):
 
     model = None
     set_id = None
     objects = []
+    deleted_objects = []
     max_pos = 0
     handler = None
 
@@ -60,34 +60,27 @@ class Object(IObject):
         if check:
             obj.state = "to_create"
             cls.objects.append(obj)
-        # cls.max_pos += 1
+        cls.max_pos += 1
         return obj if check else None
 
-    @classmethod
-    def update(cls, obj, *args, **kwargs):
-        old_name = obj.name
-        obj.name = kwargs.get("name")
-        check = cls.handler(obj)
+    def update(self, *args, **kwargs):
+        old_name = self.name
+        self.name = kwargs.get("name")
+        check = self.handler(self)
         if check:
             for arg, value in kwargs.items():
-                if not hasattr(cls, arg):
-                    raise TypeError(f"'{cls} attribute': '{arg}'' does not exist!")
-                setattr(obj, arg, value)
-
-            obj.state = "to_update"
+                if not hasattr(self, arg):
+                    raise TypeError(f"'{self} attribute': '{arg}'' does not exist!")
+                setattr(self, arg, value)
+    
+            self.state = "to_update"
         else:
-            obj.name = old_name
-        return obj  # if check else None
+            self.name = old_name
+        return self # if check else None
 
-    @classmethod
-    def delete(cls, obj, mark=False):
-        # TODO: Cascade deletion for GroupObject and ActionObject - Juliusz Task
-
-        if obj.state == "to_create":
-            return cls.objects.pop(cls.objects.index(obj))
-        obj.state = "to_delete"
-        if mark:
-            return cls.objects.pop(cls.objects.index(obj))
+    def delete(self):
+        self.objects.pop(self.objects.index(self))
+        self.deleted_objects.append(self)
 
     @classmethod
     def all(cls):
@@ -109,7 +102,7 @@ class Object(IObject):
                 else:
                     rv = obj
             if rv:
-                break
+                break        
         return rv
 
     @classmethod
@@ -129,8 +122,7 @@ class Object(IObject):
     @classmethod
     def clear(cls, *args, **kwargs):
         for obj in cls.all():
-            mark = True if obj.state == None else False
-            cls.delete(obj, mark)
+            obj.delete()
 
 
 class GroupObject(Object, IGroupObject):
@@ -152,12 +144,13 @@ class GroupObject(Object, IGroupObject):
     @position.setter
     def position(self, position):
         self._position = position
+        for child in self.children:
+            child.position = self.position
 
-    @classmethod
-    def delete(cls, obj, mark=False):
-        for child in reversed(list(obj.children)):
-            child.delete(child)
-        super().delete(obj, mark)
+    def delete(self):
+        for child in reversed(list(self.children)):
+            child.delete()
+        super().delete()
 
 
 class ActionObject(GroupObject, IActionObject):
@@ -172,7 +165,6 @@ class ActionObject(GroupObject, IActionObject):
         self.color = None
         self.params = None
         self.position = None
-        self.action_handler = None
         super().__init__(*args, **kwargs)
 
     @property
@@ -308,6 +300,14 @@ class ActorObject(Object, IActorObject):
     def text(self, text):
         self._text = text
 
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, position):
+        self._position = position
+
 
 class TimelineObject(Object, ITimelineObject):
     def __init__(self, name):
@@ -324,7 +324,6 @@ class InfinitActorObject(Object, IInfinitActorObject):
         self.stop = None
         self.annotate = None
         self.text = None
-        self.position = None
         super().__init__(*args, **kwargs)
 
     @property

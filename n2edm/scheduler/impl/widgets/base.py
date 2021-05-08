@@ -5,15 +5,16 @@ from .actions import Actions
 
 from ....sync_provider.provider import SyncProvider
 from ....widgets.views import BaseView
-from ....core.handlers import ActionHandler, GroupHandler
+from ....core.handlers import ActionHandler, GroupHandler, ActorHandler
 
 
 class Base(BaseView):
     def __init__(self):
         super().__init__()
         self.sync_provider = SyncProvider()
+        self.actor_handler = ActorHandler()
         self.action_handler = ActionHandler()
-        self.action_handler = GroupHandler()
+        self.group_handler = GroupHandler()
 
         self.create_view()
         self.create_menu_bar()

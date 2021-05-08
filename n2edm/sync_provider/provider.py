@@ -50,9 +50,7 @@ class SyncProvider:
             obj.state = None
     
         else:
-            elem.update(obj, **attributes)
-
-
+            obj.update(**attributes)
 
     def push(self):
         for obj in Object.filter(state="to_create"):
@@ -66,11 +64,10 @@ class SyncProvider:
             db_obj = obj.model.objects.filter(id=obj.pk).update(**attributes)
             obj.state = None
 
-        for obj in Object.filter(state="to_delete"):
-            obj.delete(obj, mark=True)
+
+        for obj in Object.deleted_objects:
             if obj.pk != None:
                 obj.model.objects.get(pk=obj.pk).delete()
-
 
     def get_n2edm_model(self, obj):
         return obj.model.objects.get(pk=obj.pk)

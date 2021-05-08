@@ -3,12 +3,10 @@ from abc import ABC, abstractmethod, abstractclassmethod
 class IObject(ABC):
 
     @property
-    @abstractmethod
     def name(self):
         raise NotImplementedError("You need to implement 'name' property!")
 
     @name.setter
-    @abstractmethod
     def name(self):
         raise NotImplementedError("You need to implement 'name' property setter!")
 

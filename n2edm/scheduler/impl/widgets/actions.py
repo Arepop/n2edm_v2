@@ -57,7 +57,8 @@ class Tree(TreeView):
     def open_action_edit_dialog(self):
         obj = self.currentIndex().data(role=257)
         self.edit_dialog = EditActionDialog(self, obj)
-        self.edit_dialog.SIG_edit_action.connect(lambda attributes, obj=obj: self.update_entry(attributes, obj))
+        self.edit_dialog.fill_group_combo_box(GroupObject.all())
+        self.edit_dialog.SIG_edit_action.connect(self.update_entry)
         self.edit_dialog.exec()
 
     def open_group_creation_dialog(self, action_dialog):
@@ -69,7 +70,7 @@ class Tree(TreeView):
     def create_action(self, attributes):
         try:
             action = ActionObject.create(**attributes)
-            self.model.populate()
+            self.model.add_action(action)
         except NameError:
             raise NameError("Action with error name exist")
     
@@ -81,14 +82,16 @@ class Tree(TreeView):
         except NameError:
             raise NameError("Group with error name exist")
 
-    def update_entry(self, attributes, obj):
-        obj_name = obj.name
-        if type(obj) == ActionObject:
-            obj = ActionObject.update(obj, **attributes)
-            self.model.update_action(obj, obj_name)
-        elif type(obj) == GroupObject:
-            obj = GroupObject.update(obj, **attributes)
-            self.model.update_group(obj, obj_name)
+    def update_entry(self, attributes):
+        item = self.currentIndex().data(role=257)
+        proxy_index = self.currentIndex()
+        model_index = self.proxy_model.mapToSource(proxy_index)
+        if type(item) == ActionObject:
+            item.update(**attributes)
+            self.model.update_action(item, model_index)
+        elif type(item) == GroupObject:
+            item.update(**attributes)
+            self.model.update_group(item, model_index)
 
     def delete_entry(self):
         """Remove selected group or action from tree
@@ -96,11 +99,11 @@ class Tree(TreeView):
         item = self.currentIndex().data(role=257)
         proxy_index = self.currentIndex()
         model_index = self.proxy_model.mapToSource(proxy_index)
-        item.delete(item)
+        item.delete()
         if type(item) == ActionObject:
             self.model.remove_action(item, model_index)
         else:
-            self.model.remove_group(item)
+            self.model.remove_group(item, model_index)
 
     def search(self, search_str: str) -> None:
         """Searches item in tree view by given name
@@ -194,16 +197,23 @@ class StandardItemModel(QtGui.QStandardItemModel):
             self.add_action(action)
 
     def add_action(self, action):
-        if action.state == "to_delete":
-                return
         if action.group:
+            if len(self.findItems(action.group.name)) == 1:
+                group, = self.findItems(action.group.name)
+                if type(group.data()) == ActionObject:
+                    self.add_group(action.group)
+            elif len(self.findItems(action.group.name)) == 2:
+                group, = [elem for elem in self.findItems(action.group.name) if type(elem.data()) == GroupObject]
+            else:
+                self.add_group(action.group)
+
             item = QtGui.QStandardItem()
             item.setText(action.name)
             item.setData(action)
             color_item = QtGui.QStandardItem()
             color_item.setBackground(QtGui.QBrush(
                 QtGui.QColor(action.color), QtCore.Qt.SolidPattern))
-            group_item, = self.findItems(action.group.name)
+            group_item, = [elem for elem in self.findItems(action.group.name) if type(elem.data()) == GroupObject]
             group_item.appendRow([item, color_item])
             group_item.setEditable(False)
         else:
@@ -218,40 +228,64 @@ class StandardItemModel(QtGui.QStandardItemModel):
         color_item.setEditable(False)
 
     def add_group(self, group):
-        if group.state == "to_delete":
-            return
-        else:
-            item = QtGui.QStandardItem()
-            item.setText(group.name)
-            item.setData(group)
-            color_item = QtGui.QStandardItem()
-            color_item.setBackground(QtGui.QBrush(
-                QtGui.QColor('#ffffff'), QtCore.Qt.SolidPattern))
-            self.appendRow([item, color_item])
+
+        item = QtGui.QStandardItem()
+        item.setText(group.name)
+        item.setData(group)
+        color_item = QtGui.QStandardItem()
+        color_item.setBackground(QtGui.QBrush(
+            QtGui.QColor('#ffffff'), QtCore.Qt.SolidPattern))
+        self.appendRow([item, color_item])
         item.setEditable(False)
         color_item.setEditable(False)
 
     def remove_action(self, action, index):
         if action.group:
-            group_item, = self.findItems(action.group.name) 
+            if len(self.findItems(action.group.name)) == 1:
+                group_item, = self.findItems(action.group.name)
+            elif len(self.findItems(action.group.name)) == 2:
+                group_item, = [elem for elem in self.findItems(action.group.name) if type(elem.data()) == GroupObject]
+
             item = self.itemFromIndex(index)
             group_item.removeRow(item.row())
+            if not group_item.rowCount():
+                self.remove_group(action.group)
         else:
-            item, = self.findItems(action.name)
+            item = self.itemFromIndex(index)
             self.removeRow(item.row())
 
-    def remove_group(self, group):
-        group_item, = self.findItems(group.name) 
+
+    def remove_group(self, group, index=None):
+        if index != None:
+            item = self.itemFromIndex(index)
+            self.removeRow(item.row())
+            return
+        if len(self.findItems(group.name)) == 1:
+                group_item, = self.findItems(group.name)
+        elif len(self.findItems(group.name)) == 2:
+            group_item, = [elem for elem in self.findItems(group.name) if type(elem.data()) == GroupObject]
         self.removeRow(group_item.row())
 
-    def update_action(self, action, name):
-        item, = self.findItems(name) 
-        item, color_item = self.takeRow(item.row())
-        item.setText(action.name)
-        item.setData(action)
-        color_item.setBackground(QtGui.QBrush(
-            QtGui.QColor(action.color), QtCore.Qt.SolidPattern))
-        self.appendRow([item, color_item])
+    def update_action(self, action, index):
+        if action.group:
+            if len(self.findItems(action.group.name)) == 1:
+                group_item, = self.findItems(action.group.name)
+            elif len(self.findItems(action.group.name)) == 2:
+                group_item, = [elem for elem in self.findItems(action.group.name) if type(elem.data()) == GroupObject]
+                
+            item = self.itemFromIndex(index)
+            item, color_item = group_item.takeRow(item.row())
+            item.setText(action.name)
+            color_item.setBackground(QtGui.QBrush(
+                QtGui.QColor(action.color), QtCore.Qt.SolidPattern))
+            group_item.appendRow([item, color_item])
+        else:
+            item = self.itemFromIndex(index)
+            item, color_item = self.takeRow(item.row())
+            item.setText(action.name)
+            color_item.setBackground(QtGui.QBrush(
+                QtGui.QColor(action.color), QtCore.Qt.SolidPattern))
+            self.appendRow([item, color_item])
 
-    def update_group(self, group):
+    def update_group(self, group, index):
         pass
