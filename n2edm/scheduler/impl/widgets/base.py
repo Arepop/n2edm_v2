@@ -5,7 +5,7 @@ from .actions import Actions
 
 from ....sync_provider.provider import SyncProvider
 from ....widgets.views import BaseView
-from ....core.handlers import ActionHandler, GroupHandler, ActorHandler
+from ....core.handlers import ActionHandler, GroupHandler, ActorHandler, SequenceHandler
 
 
 class Base(BaseView):
@@ -15,6 +15,7 @@ class Base(BaseView):
         self.actor_handler = ActorHandler()
         self.action_handler = ActionHandler()
         self.group_handler = GroupHandler()
+        self.sequence_handler = SequenceHandler("sequence")
 
         self.create_view()
         self.create_menu_bar()
@@ -33,7 +34,7 @@ class Base(BaseView):
         self.pull_action.triggered.connect(self.sync_provider.pull_and_overwrite)
         self.push_action.triggered.connect(self.sync_provider.push)
         self.pull_action.triggered.connect(self.actions.tree.sync_with_db)
-
+        self.create_sequence.triggered.connect(self.sequence_handler.update_sequence)
             
     def create_menu_bar(self) -> None:
         """Initiate menu bar for main window with signals (menu actions) connections to functions in widgets
@@ -69,4 +70,9 @@ class Base(BaseView):
         self.actions_menu.addAction(self.add_timeline)
         self.actions_menu.addAction(self.pull_action)
         self.actions_menu.addAction(self.push_action)
+
+        self.create_sequence = QtWidgets.QAction("Create sequence")
+
+        self.sequence_menu = main_menu.addMenu("Sequence")
+        self.sequence_menu.addAction(self.create_sequence)
 

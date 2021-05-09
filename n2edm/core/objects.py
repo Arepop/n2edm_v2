@@ -323,6 +323,7 @@ class InfinitActorObject(Object, IInfinitActorObject):
         self.stop = None
         self.annotate = None
         self.text = None
+        self.line2d = None
         super().__init__(*args, **kwargs)
 
     @property

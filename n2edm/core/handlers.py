@@ -226,16 +226,15 @@ class SequenceHandler:
             commands_list.append((actor.stop, actor.action.stop_cmd))
 
         commands_list.sort(key=self.sort_criteria)
-        # print(commands_list)
         h = commands_list[0][0]
-        llist.append("sleep:" + str(h) + "\n")
+        llist.append("SELLP:" + str(h) + "\n")
         for line in commands_list:
             if line[0] != h:
-                llist.append("sleep" + str(line[0] - int(h)) + "\n")
+                llist.append("SELLP" + str(line[0] - int(h)) + "\n")
                 h = line[0]
-            llist.append(line[1] + "\n")
+            llist.append(str(line[1]) + "\n")
         print(llist)
-        rv_list = [_[1] + "\n" for _ in commands_list]
+        rv_list = [str(_[1]) + "\n" for _ in commands_list]
         return llist
 
     def sort_criteria(self, command):

@@ -45,6 +45,7 @@ class Scheduler(SchedulerView):
         )
 
         line2d.set_path_effects([outline])
+        actor.line2d = line2d
         self.canvas.draw()
 
     def draw_infinit_actor(self, actor, color="blue"):
