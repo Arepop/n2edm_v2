@@ -17,6 +17,7 @@ from ....core.objects import *
 from ....core.handlers import *
 from ....widgets.dialogs import CustomActorTime
 
+
 class Scheduler(SchedulerView):
 
     artist_and_actors = {}
@@ -65,7 +66,6 @@ class Scheduler(SchedulerView):
 
         line2d.set_path_effects([outline])
         self.canvas.draw()
-        
 
     def create_canvas(self) -> None:
         """Create matplotlib canvas and tollbar"""
@@ -102,7 +102,7 @@ class Scheduler(SchedulerView):
             self.canvas.draw()
 
     def create_custom_actor(self, action):
-        #attributes for actor to create
+        # attributes for actor to create
         attributes = {
             "name": action.name,
             "group": action.group,
@@ -116,11 +116,11 @@ class Scheduler(SchedulerView):
             "text": action.name,
             "position": action.position,
         }
-    
+
         custom_dialog = CustomActorTime(self, attributes)
         custom_dialog.exec()
-        
-        #creating actor
+
+        # creating actor
         actor = ActorObject.create(**attributes)
         # print(vars(actor))
         self.draw_actor(actor)
@@ -140,19 +140,19 @@ class Scheduler(SchedulerView):
             "position": action.position,
         }
 
-        #creating actor
+        # creating actor
         actor = ActorObject.create(**attributes)
         self.draw_actor(actor)
 
     def object_deleted(self, obj):
-        self.update_line2d_position(obj)
         for actor, artist in self.artist_and_actors:
             if actor.state == "to_delete":
                 artist.remove()
             del self.artist_and_actors[actor]
+        self.update_line2d_position()
+
         self.canvas.draw()
 
     def update_line2d_position(self):
         for actor, artist in self.artist_and_actors:
             artist.set_ydata([actor.start, actor.stop])
-
