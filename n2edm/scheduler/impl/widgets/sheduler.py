@@ -147,7 +147,7 @@ class Scheduler(SchedulerView):
 
     def update_line2d_position(self, obj):
         if type(obj) is ActorObject:
-            obj.
+            obj.line2d.set_ydata([actor.position, actor.position])
         elif type(obj) is GroupObject:
             for actor in ActorObject.filter(group=action.group):
                 actor.line2d.set_ydata([actor.position, actor.position])
