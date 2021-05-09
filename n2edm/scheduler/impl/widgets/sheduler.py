@@ -18,6 +18,9 @@ from ....core.handlers import *
 from ....widgets.dialogs import CustomActorTime
 
 class Scheduler(SchedulerView):
+
+    artist_and_actors = {}
+
     def __init__(self, parent: Any) -> None:
         super().__init__(parent=parent)
         self.create_canvas()
@@ -41,7 +44,7 @@ class Scheduler(SchedulerView):
         )
 
         line2d.set_path_effects([outline])
-        actor.line2d = line2d
+        self.artist_and_actors[actor] = line2d
         self.canvas.draw()
 
     def draw_infinit_actor(self, actor, color="blue"):
@@ -143,14 +146,13 @@ class Scheduler(SchedulerView):
 
     def object_deleted(self, obj):
         self.update_line2d_position(obj)
+        for actor, artist in self.artist_and_actors:
+            if actor.state == "to_delete":
+                artist.remove()
+            del self.artist_and_actors[actor]
         self.canvas.draw()
 
-    def update_line2d_position(self, obj):
-        if type(obj) is ActorObject:
-            obj.line2d.set_ydata([actor.position, actor.position])
-        elif type(obj) is GroupObject:
-            for actor in ActorObject.filter(group=action.group):
-                actor.line2d.set_ydata([actor.position, actor.position])
-        else:
-            for actor in action.children:
-                actor.line2d.set_ydata([actor.position, actor.position])
+    def update_line2d_position(self):
+        for actor, artist in self.artist_and_actors:
+            artist.set_ydata([actor.start, actor.stop])
+

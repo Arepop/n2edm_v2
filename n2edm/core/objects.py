@@ -310,11 +310,6 @@ class ActorObject(Object, IActorObject):
         self._position = position
 
 
-    def delete(self):
-        self.line2d.remove()
-        self.line2d = None
-        super().delete()
-
 class TimelineObject(Object, ITimelineObject):
     def __init__(self, name):
         super().__init__(name)
@@ -330,7 +325,6 @@ class InfinitActorObject(Object, IInfinitActorObject):
         self.stop = None
         self.annotate = None
         self.text = None
-        self.line2d = None
         super().__init__(*args, **kwargs)
 
     @property
