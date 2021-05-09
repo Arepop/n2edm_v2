@@ -31,7 +31,7 @@ class Tree(TreeView):
 
     SIG_create_actor = Signal(object)
     SIG_create_custom_actor = Signal(object)
-    SIG_delete_action = Signal(object)
+    SIG_object_deleted = Signal(object)
 
     def __init__(self, parent):
         super().__init__(parent=parent)
@@ -103,7 +103,7 @@ class Tree(TreeView):
         model_index = self.proxy_model.mapToSource(proxy_index)
         if item:
             item.delete()
-        self.SIG_delete_action.emit(item)
+        self.SIG_object_deleted.emit(item)
         if type(item) == ActionObject:
             self.model.remove_action(item, model_index)
         else:

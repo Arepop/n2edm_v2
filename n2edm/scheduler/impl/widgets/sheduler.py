@@ -98,7 +98,6 @@ class Scheduler(SchedulerView):
         for actor in ActorObject.all():
             self.canvas.draw()
 
-
     def create_custom_actor(self, action):
         #attributes for actor to create
         attributes = {
@@ -123,7 +122,6 @@ class Scheduler(SchedulerView):
         # print(vars(actor))
         self.draw_actor(actor)
 
-
     def create_actor(self, action):
         attributes = {
             "name": action.name,
@@ -143,9 +141,16 @@ class Scheduler(SchedulerView):
         actor = ActorObject.create(**attributes)
         self.draw_actor(actor)
 
-    def action_deleted(self, action):
+    def object_deleted(self, obj):
+        self.update_line2d_position(obj)
         self.canvas.draw()
 
-    def update_line2d_position(self, action):
-        pass
-
+    def update_line2d_position(self, obj):
+        if type(obj) is ActorObject:
+            obj.
+        elif type(obj) is GroupObject:
+            for actor in ActorObject.filter(group=action.group):
+                actor.line2d.set_ydata([actor.position, actor.position])
+        else:
+            for actor in action.children:
+                actor.line2d.set_ydata([actor.position, actor.position])
