@@ -49,7 +49,7 @@ class GroupHandler(Handler, IGroupHandler):
     @classmethod
     def check(cls, obj):
         return True
-    
+
     @classmethod
     def set_position(cls, obj):
         obj.group.position = Handler.current_position
@@ -71,6 +71,7 @@ class GroupHandler(Handler, IGroupHandler):
         obj1.position = obj2.position
         obj2.postion = temp
 
+
 class ActionHandler(Handler, IActionHandler):
     object_ = ActionObject
 
@@ -86,10 +87,9 @@ class ActionHandler(Handler, IActionHandler):
     def set_position(cls, obj):
         if obj.group == None:
             obj.action.position = Handler.current_position
-            Handler.current_position += 1          
+            Handler.current_position += 1
         else:
             GroupHandler.set_position(obj)
-
 
     def free_position(self, obj):
 
@@ -150,22 +150,26 @@ class ActorHandler(Handler, IActorHandler):
             ):
                 raise ValueError("Time already in use!")
 
-
     @classmethod
     def calculate_vertical_position(cls, obj):
         maximum_position = 0
         if obj.stop != 0:
             return maximum_position
-        if obj.action.group == None and len(list(ActorObject.filter(action=obj.action))):
-            maximum_position = max(actor.stop for actor in ActorObject.filter(action=obj.action))
+        if obj.action.group == None and len(
+            list(ActorObject.filter(action=obj.action))
+        ):
+            maximum_position = max(
+                actor.stop for actor in ActorObject.filter(action=obj.action)
+            )
         elif len(list(ActorObject.filter(group=obj.group))):
-            maximum_position = max(actor.stop for actor in ActorObject.filter(group=obj.group))
+            maximum_position = max(
+                actor.stop for actor in ActorObject.filter(group=obj.group)
+            )
 
         obj.start = maximum_position
         obj.stop = maximum_position + obj.action.duration
 
         return maximum_position
-
 
     @classmethod
     def set_position(cls, obj):
@@ -222,17 +226,17 @@ class SequenceHandler:
         commands_list = []
         llist = []
         for actor in ActorObject.all():
-            commands_list.append((actor.start, actor.action.start_cmd))
-            commands_list.append((actor.stop, actor.action.stop_cmd))
+            commands_list.append((actor.start, actor.action.start_cmd, actor.params))
+            commands_list.append((actor.stop, actor.action.stop_cmd, actor.params))
 
         commands_list.sort(key=self.sort_criteria)
         h = commands_list[0][0]
-        llist.append("SELLP:" + str(h) + "\n")
+        llist.append("SLEEP:" + str(h) + "\n")
         for line in commands_list:
             if line[0] != h:
-                llist.append("SELLP" + str(line[0] - int(h)) + "\n")
+                llist.append("SLEEP" + str(line[0] - int(h)) + "\n")
                 h = line[0]
-            llist.append(str(line[1]) + "\n")
+            llist.append(str(line[1]) + " " + line[2] + "\n")
         print(llist)
         rv_list = [str(_[1]) + "\n" for _ in commands_list]
         return llist
