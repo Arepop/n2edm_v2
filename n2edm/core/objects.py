@@ -1,6 +1,7 @@
 from ..abstract.objects import *
 from ..models.models import *
 
+
 class Object(IObject):
 
     model = None
@@ -71,13 +72,14 @@ class Object(IObject):
                 if not hasattr(self, arg):
                     raise TypeError(f"'{self} attribute': '{arg}'' does not exist!")
                 setattr(self, arg, value)
-    
+
             self.state = "to_update"
         else:
             self.name = old_name
-        return self # if check else None
+        return self  # if check else None
 
     def delete(self):
+        self.handler.free_position(self)
         self.objects.pop(self.objects.index(self))
         self.deleted_objects.append(self)
 
@@ -101,7 +103,7 @@ class Object(IObject):
                 else:
                     rv = obj
             if rv:
-                break        
+                break
         return rv
 
     @classmethod
