@@ -13,7 +13,12 @@ class Handler(IHandler):
         self.object_.handler = self
 
     def __call__(self, obj):
-        return self.check_unique(obj)
+        return self.check(obj)
+
+    @classmethod
+    def check(cls, obj):
+        cls.check_unique(obj)
+        return True
 
     @classmethod
     def check_unique(cls, obj):
@@ -32,9 +37,6 @@ class Handler(IHandler):
 
         return True
 
-    def __call__(self, obj):
-        return self.check_unique(obj)
-
 
 class GroupHandler(Handler, IGroupHandler):
     object_ = GroupObject
@@ -45,9 +47,15 @@ class GroupHandler(Handler, IGroupHandler):
         self.object_.handler = self
 
     @classmethod
+    def check(cls, obj):
+        return True
+    
+    @classmethod
     def set_position(cls, obj):
-        obj.position = Handler.current_position
+        obj.group.position = Handler.current_position
         Handler.current_position += 1
+        for child in obj.group.children:
+            child.position = obj.group.position
 
     def free_position(self, obj):
 
@@ -63,7 +71,6 @@ class GroupHandler(Handler, IGroupHandler):
         obj1.position = obj2.position
         obj2.postion = temp
 
-
 class ActionHandler(Handler, IActionHandler):
     object_ = ActionObject
 
@@ -72,9 +79,17 @@ class ActionHandler(Handler, IActionHandler):
         self.object_.handler = self
 
     @classmethod
+    def check(cls, obj):
+        return True
+
+    @classmethod
     def set_position(cls, obj):
-        obj.position = Handler.current_position
-        Handler.current_position += 1
+        if obj.group == None:
+            obj.action.position = Handler.current_position
+            Handler.current_position += 1          
+        else:
+            GroupHandler.set_position(obj)
+
 
     def free_position(self, obj):
 
@@ -101,6 +116,9 @@ class ActorHandler(Handler, IActorHandler):
 
     @classmethod
     def check(cls, obj):
+        cls.calculate_vertical_position(obj)
+        cls.time_check(obj)
+        cls.set_position(obj)
         return True
 
     def __call__(self, obj):
@@ -117,15 +135,17 @@ class ActorHandler(Handler, IActorHandler):
 
     @classmethod
     def time_check(cls, obj):
+        if obj.stop == 0 and obj.stop == 0:
+            return
 
         for old_obj in obj.filter(group=obj.group):
             if old_obj == obj:
                 continue
 
             elif (
-                (obj.start >= old_obj.start and obj.start <= old_obj.stop)
+                (obj.start >= old_obj.start and obj.start < old_obj.stop)
                 or (obj.stop >= old_obj.start and obj.stop <= old_obj.stop)
-                or (old_obj.start >= obj.start and old_obj.start <= obj.stop)
+                or (old_obj.start >= obj.start and old_obj.start < obj.stop)
                 or (old_obj.stop >= obj.stop and old_obj.stop <= obj.stop)
             ):
                 raise ValueError("Time already in use!")
@@ -134,6 +154,8 @@ class ActorHandler(Handler, IActorHandler):
     @classmethod
     def calculate_vertical_position(cls, obj):
         maximum_position = 0
+        if obj.stop != 0:
+            return maximum_position
         if obj.action.group == None and len(list(ActorObject.filter(action=obj.action))):
             maximum_position = max(actor.stop for actor in ActorObject.filter(action=obj.action))
         elif len(list(ActorObject.filter(group=obj.group))):
@@ -142,7 +164,16 @@ class ActorHandler(Handler, IActorHandler):
         obj.start = maximum_position
         obj.stop = maximum_position + obj.action.duration
 
-        return obj
+        return maximum_position
+
+
+    @classmethod
+    def set_position(cls, obj):
+        if obj.action.position == None:
+            ActionHandler.set_position(obj)
+            obj.position = obj.action.position
+        else:
+            obj.position = obj.action.position
 
 
 class InfinitActorHandler(Handler, IInfinitActorHandler):
@@ -195,10 +226,6 @@ class SequenceHandler:
             commands_list.append((actor.stop, actor.action.stop_cmd))
 
         commands_list.sort(key=self.sort_criteria)
-<<<<<<< HEAD
-        rv_list = [str(_) + "\n" for _ in commands_list]
-        return rv_list
-=======
         # print(commands_list)
         h = commands_list[0][0]
         llist.append("sleep:" + str(h) + "\n")
@@ -210,7 +237,6 @@ class SequenceHandler:
         print(llist)
         rv_list = [_[1] + "\n" for _ in commands_list]
         return llist
->>>>>>> 42c654821b132bcee918b3ec24be2c1451ef5959
 
     def sort_criteria(self, command):
         return command[0]

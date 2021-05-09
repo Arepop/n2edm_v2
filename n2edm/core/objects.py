@@ -60,7 +60,6 @@ class Object(IObject):
         if check:
             obj.state = "to_create"
             cls.objects.append(obj)
-        cls.max_pos += 1
         return obj if check else None
 
     def update(self, *args, **kwargs):

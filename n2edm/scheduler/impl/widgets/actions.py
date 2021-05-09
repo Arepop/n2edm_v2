@@ -30,6 +30,7 @@ class Actions(ActionsView):
 class Tree(TreeView):
 
     SIG_create_actor = Signal(object)
+    SIG_create_custom_actor = Signal(object)
 
     def __init__(self, parent):
         super().__init__(parent=parent)
@@ -120,16 +121,28 @@ class Tree(TreeView):
             event (QtCore.QEvent): QContextEvent
         """
         self.menu = QtWidgets.QMenu(self)
-        add_action = QtWidgets.QAction("Add Action...", self)
-        edit_action = QtWidgets.QAction("Edit...", self)
-        del_action = QtWidgets.QAction("Delete...", self)
+        add_action = QtWidgets.QAction("Add Action", self)
+        edit_action = QtWidgets.QAction("Edit", self)
+        del_action = QtWidgets.QAction("Delete", self)
+        add_custom = QtWidgets.QAction("Add with custom time", self)
         add_action.triggered.connect(self.open_action_creation_dialog)
         edit_action.triggered.connect(self.open_action_edit_dialog)
         del_action.triggered.connect(self.delete_entry)
+        add_custom.triggered.connect(self.add_custom_time_actor)
         self.menu.addAction(add_action)
         self.menu.addAction(edit_action)
         self.menu.addAction(del_action)
+        self.menu.addAction(add_custom)
         self.menu.popup(QtGui.QCursor.pos())
+
+    def add_custom_time_actor(self):
+        action = self.currentIndex().data(role=257)
+        if action is None:
+            action = self.currentIndex().siblingAtColumn(
+                self.currentIndex().column()-1).data(role=257)
+
+        if isinstance(action, ActionObject):
+            self.SIG_create_custom_actor.emit(action)
 
     def mouseDoubleClickEvent(self, event: QtCore.QEvent) -> None:
         """Overloaded method of mouseDoubleClickEvent. Emits signal with action (Adds actor).

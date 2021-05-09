@@ -15,6 +15,7 @@ django.setup()
 from ....widgets.views import SchedulerView
 from ....core.objects import *
 from ....core.handlers import *
+from ....widgets.dialogs import CustomActorTime
 
 class Scheduler(SchedulerView):
     def __init__(self, parent: Any) -> None:
@@ -100,16 +101,33 @@ class Scheduler(SchedulerView):
         for actor in ActorObject.all():
             self.canvas.draw()
 
-    def create_actor(self, action):
 
-        #positioning of actors in y axis (vertical line)
-        if action.group == None and action.position == None:
-            ActionHandler.set_position(action)
-
-        elif action.group != None and action.group.position == None:
-            GroupHandler.set_position(action.group)
-   
+    def create_custom_actor(self, action):
         #attributes for actor to create
+        attributes = {
+            "name": action.name,
+            "group": action.group,
+            "action": action,
+            "start": 0,
+            "stop": 0,
+            "duration": action.duration,
+            "color": action.color,
+            "params": action.params,
+            "annotate": action.name,
+            "text": action.name,
+            "position": action.position,
+        }
+    
+        custom_dialog = CustomActorTime(self, attributes)
+        custom_dialog.exec()
+        
+        #creating actor
+        actor = ActorObject.create(**attributes)
+        # print(vars(actor))
+        self.draw_actor(actor)
+
+
+    def create_actor(self, action):
         attributes = {
             "name": action.name,
             "group": action.group,
@@ -126,8 +144,6 @@ class Scheduler(SchedulerView):
 
         #creating actor
         actor = ActorObject.create(**attributes)
-
-        ActorHandler.calculate_vertical_position(actor)
 
         # print(vars(actor))
         self.draw_actor(actor)

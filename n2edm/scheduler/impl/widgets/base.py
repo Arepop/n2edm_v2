@@ -29,6 +29,7 @@ class Base(BaseView):
     def connect_signals_with_slots(self):
         self.create_action.triggered.connect(self.actions.tree.open_action_creation_dialog)
         self.actions.tree.SIG_create_actor.connect(self.scheduler.create_actor)
+        self.actions.tree.SIG_create_custom_actor.connect(self.scheduler.create_custom_actor)
         self.pull_action.triggered.connect(self.sync_provider.pull_and_overwrite)
         self.push_action.triggered.connect(self.sync_provider.push)
         self.pull_action.triggered.connect(self.actions.tree.sync_with_db)
