@@ -23,10 +23,6 @@ class Scheduler(SchedulerView):
         self.create_canvas()
         self.set_canvas_attributes(100)
         self.set_canvas_labels()
-        self.group_handler = GroupHandler()
-        self.action_handler = ActionHandler()
-        self.actor_handler = ActorHandler()
-        self.seq_handler = SequenceHandler("file")
 
     def draw_actor(self, actor):
         bbox = self.ax.get_window_extent().transformed(
@@ -145,6 +141,11 @@ class Scheduler(SchedulerView):
 
         #creating actor
         actor = ActorObject.create(**attributes)
-
-        # print(vars(actor))
         self.draw_actor(actor)
+
+    def action_deleted(self, action):
+        self.canvas.draw()
+
+    def update_line2d_position(self, action):
+        pass
+
