@@ -145,11 +145,12 @@ class Scheduler(SchedulerView):
         self.draw_actor(actor)
 
     def object_deleted(self, obj):
-        remove_keys = []
         for actor, artist in self.artist_and_actors.items():
             if actor in Object.deleted_objects:
-                artist.remove()
-                remove_keys.append(actor)
+                try:
+                    artist.remove()
+                except ValueError:
+                    continue
 
         self.update_line2d_position()
 
