@@ -31,8 +31,8 @@ class Base(BaseView):
         self.create_action.triggered.connect(self.actions.tree.open_action_creation_dialog)
         self.actions.tree.SIG_create_actor.connect(self.scheduler.create_actor)
         self.actions.tree.SIG_create_custom_actor.connect(self.scheduler.create_custom_actor)
-        self.pull_action.triggered.connect(self.sync_provider.pull_and_overwrite)
-        self.push_action.triggered.connect(self.sync_provider.push)
+        self.pull_action.triggered.connect(self.sync_provider.pull_and_overwrite_actions)
+        self.push_action.triggered.connect(self.sync_provider.push_actions)
         self.pull_action.triggered.connect(self.actions.tree.sync_with_db)
         self.create_sequence.triggered.connect(self.sequence_handler.update_sequence)
         self.actions.tree.SIG_object_deleted.connect(self.scheduler.object_deleted)
@@ -63,8 +63,8 @@ class Base(BaseView):
 
         self.create_action = QtWidgets.QAction("Add Action")
         self.add_timeline = QtWidgets.QAction("Add Timeline")
-        self.pull_action = QtWidgets.QAction("Pull")
-        self.push_action = QtWidgets.QAction("Push")
+        self.pull_action = QtWidgets.QAction("Pull actions")
+        self.push_action = QtWidgets.QAction("Push actions")
 
         self.actions_menu = main_menu.addMenu("Actions")
         self.actions_menu.addAction(self.create_action)

@@ -220,7 +220,6 @@ class ActionObject(GroupObject, IActionObject):
     def params(self, params):
         self._params = params
 
-
 class ActorObject(Object, IActorObject):
 
     model = Actor

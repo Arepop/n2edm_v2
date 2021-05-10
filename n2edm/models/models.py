@@ -6,8 +6,6 @@ class Group(models.Model):
 
     set_id = models.TextField(default=0)
     name = models.TextField()
-    position = models.IntegerField(null=True)
-    # max_pos = models.IntegerField()
 
 
 class Action(models.Model):
@@ -18,10 +16,9 @@ class Action(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True)
     start_cmd = models.TextField()
     stop_cmd = models.TextField(null=True)
-    duration = models.IntegerField()
-    params = models.TextField()
+    duration = models.IntegerField(null=True)
+    params = models.TextField(null=True)
     color = models.TextField()
-    position = models.IntegerField(null=True)
 
 
 class Actor(models.Model):
@@ -37,6 +34,7 @@ class Actor(models.Model):
     stop = models.IntegerField()
     annotate = models.TextField()
     text = models.TextField()
+    position = models.IntegerField(default=0)
 
 
 class TimelineActor(models.Model):

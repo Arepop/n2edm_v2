@@ -49,7 +49,7 @@ class GroupHandler(Handler, IGroupHandler):
     @classmethod
     def check(cls, obj):
         return True
-
+    
     @classmethod
     def set_position(cls, obj):
         obj.group.position = Handler.current_position
@@ -71,7 +71,6 @@ class GroupHandler(Handler, IGroupHandler):
         obj1.position = obj2.position
         obj2.postion = temp
 
-
 class ActionHandler(Handler, IActionHandler):
     object_ = ActionObject
 
@@ -87,7 +86,7 @@ class ActionHandler(Handler, IActionHandler):
     def set_position(cls, obj):
         if obj.group == None:
             obj.action.position = Handler.current_position
-            Handler.current_position += 1
+            Handler.current_position += 1          
         else:
             GroupHandler.set_position(obj)
 
@@ -137,9 +136,7 @@ class ActorHandler(Handler, IActorHandler):
         if obj.stop == 0 and obj.stop == 0:
             return
 
-        important_objects = (
-            obj.filter(group=obj.group) if obj.group else obj.filter(action=obj.action)
-        )
+        important_objects = obj.filter(group=obj.group) if obj.group else obj.filter(action=obj.action)
 
         for old_obj in important_objects:
             if old_obj == obj:
@@ -159,25 +156,14 @@ class ActorHandler(Handler, IActorHandler):
         if obj.stop != 0:
             return maximum_position
         if obj.action.group == None:
-            maximum_position = max(
-                list(actor.stop for actor in obj.action.children), default=0
-            )
+            maximum_position = max(list(actor.stop for actor in obj.action.children), default=0)
         elif len(list(ActorObject.filter(group=obj.group))):
-            maximum_position = max(
-                list(actor.stop for actor in ActorObject.filter(group=obj.group)),
-                default=0,
-            )
+            maximum_position = max(list(actor.stop for actor in ActorObject.filter(group=obj.group)), default=0)
 
         obj.start = maximum_position
         obj.stop = maximum_position + obj.action.duration
         return maximum_position
 
-    def free_position(self, obj):
-        for lower in obj.all():
-
-            if lower.position < obj.position and lower.handler == obj.handler:
-                lower.position -= 1
-        Handler.current_position -= 1
 
     @classmethod
     def set_position(cls, obj):
@@ -187,6 +173,12 @@ class ActorHandler(Handler, IActorHandler):
         else:
             obj.position = obj.action.position
 
+    def free_position(self, obj):
+        for lower in obj.all():
+
+            if lower.position < obj.position and lower.handler == obj.handler:
+                lower.position -= 1
+        Handler.current_position -= 1
 
 class InfinitActorHandler(Handler, IInfinitActorHandler):
     object_ = InfinitActorObject

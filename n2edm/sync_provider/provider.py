@@ -19,10 +19,10 @@ class SyncProvider:
         if not self.auth:
             raise ConnectionError("Could not connect to server")
         self.pull = self.pull_and_compare()
-        self.push()
+        self.push_actions()
 
     def pull_and_compare(self):
-        objects_classes = [GroupObject, ActionObject, ActorObject] #TODO: When InfinityActor and TimelineActor are ready update this
+        objects_classes = [GroupObject, ActionObject] #TODO: When InfinityActor and TimelineActor are ready update this
         for elem in objects_classes:
             for obj in elem.model.objects.all():
                 attributes = vars(obj)
@@ -35,8 +35,8 @@ class SyncProvider:
         """
         pass 
 
-    def pull_and_overwrite(self):
-        objects_classes = [GroupObject, ActionObject, ActorObject] #TODO: When InfinityActor and TimelineActor are ready update this
+    def pull_and_overwrite_actions(self):
+        objects_classes = [GroupObject, ActionObject] #TODO: When InfinityActor and TimelineActor are ready update this
         for elem in objects_classes:
             for obj in elem.model.objects.all():
                 attributes = vars(obj)
@@ -52,20 +52,25 @@ class SyncProvider:
         else:
             obj.update(**attributes)
 
-    def push(self):
+    def push_actions(self):
         for obj in Object.filter(state="to_create"):
+            if type(obj) == ActorObject:
+                continue
             attributes = self.get_attributes(obj)
             db_obj = obj.model.objects.create(**attributes)
             obj.state = None
             obj.pk = db_obj.id
 
         for obj in Object.filter(state="to_update"):
+            if type(obj) == ActorObject:
+                continue
             attributes = self.get_attributes(obj)
             db_obj = obj.model.objects.filter(id=obj.pk).update(**attributes)
             obj.state = None
 
-
         for obj in Object.deleted_objects:
+            if type(obj) == ActorObject:
+                continue
             if obj.pk != None:
                 obj.model.objects.get(pk=obj.pk).delete()
 
@@ -96,6 +101,8 @@ class SyncProvider:
             attributes[key.strip("_")] = value
 
         attributes["set_id"] = obj.set_id
+        if type(obj) is not ActorObject:
+            del attributes["position"]
 
         del attributes["pk"]
         del attributes["state"]

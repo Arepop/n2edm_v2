@@ -103,11 +103,11 @@ class Tree(TreeView):
         model_index = self.proxy_model.mapToSource(proxy_index)
         if item:
             item.delete()
-        self.SIG_object_deleted.emit(item)
         if type(item) == ActionObject:
             self.model.remove_action(item, model_index)
         else:
             self.model.remove_group(item, model_index)
+        self.SIG_object_deleted.emit(item)
 
     def search(self, search_str: str) -> None:
         """Searches item in tree view by given name
