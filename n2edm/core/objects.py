@@ -79,7 +79,7 @@ class Object(IObject):
         return self  # if check else None
 
     def delete(self):
-        self.handler.free_position(self)
+        # self.handler.free_position(self)
         self.objects.pop(self.objects.index(self))
         self.deleted_objects.append(self)
 
@@ -149,8 +149,11 @@ class GroupObject(Object, IGroupObject):
             child.position = self.position
 
     def delete(self):
+        self.handler.free_position(self)
+
         for child in reversed(list(self.children)):
             child.delete()
+
         super().delete()
 
 
@@ -219,6 +222,7 @@ class ActionObject(GroupObject, IActionObject):
     @params.setter
     def params(self, params):
         self._params = params
+
 
 class ActorObject(Object, IActorObject):
 
@@ -389,4 +393,3 @@ class InfinitActorObject(Object, IInfinitActorObject):
     @text.setter
     def text(self, text):
         self._text = text
-

@@ -59,8 +59,6 @@ class GroupHandler(Handler, IGroupHandler):
 
     def free_position(self, obj):
 
-        print("here2")
-
         for lower in obj.all():
 
             if lower.position > obj.position:
@@ -99,7 +97,6 @@ class ActionHandler(Handler, IActionHandler):
             return None
 
         for lower in obj.all():
-            print(lower)
 
             if lower.position > obj.position:
                 lower.position -= 1
@@ -188,14 +185,7 @@ class ActorHandler(Handler, IActorHandler):
             obj.position = obj.action.position
 
     def free_position(self, obj):
-
-        for lower in obj.all():
-
-            if lower.position > obj.position:
-                lower.position -= 1
-                lower.action.position -= 1
-
-        Handler.current_position -= 1
+        pass
 
 
 class InfinitActorHandler(Handler, IInfinitActorHandler):
@@ -252,7 +242,7 @@ class SequenceHandler:
         llist.append("SLEEP:" + " " + str(h) + "\n")
         for line in commands_list:
             if line[0] != h:
-                llist.append("SLEEP" + str(line[0] - int(h)) + "\n")
+                llist.append("SLEEP" + " " + str(line[0] - int(h)) + "\n")
                 h = line[0]
             llist.append(str(line[1]) + " " + str(line[2]) + "\n")
         rv_list = [str(_[1]) + "\n" for _ in commands_list]
