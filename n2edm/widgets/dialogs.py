@@ -3,6 +3,7 @@ from PyQt5.QtCore import pyqtSignal as Signal
 
 from .helpers import colorQPushButton
 
+
 class CoreDialog(QtWidgets.QDialog):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
@@ -35,7 +36,7 @@ class ActionDialog(CoreDialog):
         self.init_layout()
         self.init_widgets()
         self.connections()
-        
+
         self.group = None
         self.name = None
         self.start_cmd = None
@@ -44,7 +45,15 @@ class ActionDialog(CoreDialog):
         self.duration = None
         self.color = None
 
-        self.attr = ['group', 'name', 'start_cmd', 'stop_cmd', 'params', 'duration', 'color']
+        self.attr = [
+            "group",
+            "name",
+            "start_cmd",
+            "stop_cmd",
+            "params",
+            "duration",
+            "color",
+        ]
 
     def init_layout(self) -> None:
         """Initiate all layout for dialog
@@ -81,7 +90,8 @@ class ActionDialog(CoreDialog):
         self.group_label = QtWidgets.QLabel("Chose Group")
         self.group_combo_box = QtWidgets.QComboBox()
         self.group_combo_box.setSizePolicy(
-            Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Minimum)
+            Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Minimum
+        )
         self.group_line_layout.addWidget(self.group_label)
         self.group_line_layout.addWidget(self.group_combo_box)
         self.action_label = QtWidgets.QLabel("Name Action")
@@ -107,7 +117,8 @@ class ActionDialog(CoreDialog):
         self.color_label = QtWidgets.QLabel("color")
         self.color_button = colorQPushButton("Set")
         self.color_button.setSizePolicy(
-            Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Minimum)
+            Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Minimum
+        )
         self.color_line_layout.addWidget(self.color_label)
         self.color_line_layout.addWidget(self.color_button)
         self.confirm_button = QtWidgets.QPushButton("Create")
@@ -127,13 +138,11 @@ class ActionDialog(CoreDialog):
         self.confirm_button.clicked.connect(self.set_action_data)
 
     def fill_group_combo_box(self, groups=[]) -> None:
-        """After loading widgets GroupComboBox is filled with existing group names
-        """
+        """After loading widgets GroupComboBox is filled with existing group names"""
         self.group_combo_box.addItem("...", None)
         self.group_combo_box.addItem("Create...", "...")
         for group in groups:
             self.group_combo_box.addItem(group.name, group)
-
 
     def set_action_data(self) -> None:
         """Reads action attributes and data from text fields and assign them with
@@ -148,12 +157,13 @@ class ActionDialog(CoreDialog):
         self.color = self.color_button.color()
         attributes = {}
         for attr in self.attr:
-            attributes[attr] = getattr(self, attr) if getattr(self, attr) != "" else None
+            attributes[attr] = (
+                getattr(self, attr) if getattr(self, attr) != "" else None
+            )
         self.SIG_create_action.emit(attributes)
 
     def cancel(self) -> None:
-        """After clicking close button dialog is closes.
-        """
+        """After clicking close button dialog is closes."""
         self.close()
 
 
@@ -164,12 +174,12 @@ class EditActionDialog(ActionDialog):
     def __init__(self, parent: QtWidgets.QWidget, action) -> None:
         super().__init__(parent)
         self.setWindowTitle("Update Action")
-        self.confirm_button.setText('Update')
+        self.confirm_button.setText("Update")
         self.action = action
         self.action_name_line.setText(self.action.name)
-        self.start_line.setText(self.action.start_cmd) 
+        self.start_line.setText(self.action.start_cmd)
         self.stop_line.setText(self.action.stop_cmd)
-        self.time_distance_line.setText(str(self.action.duration)) 
+        self.time_distance_line.setText(str(self.action.duration))
         self.parameter_line.setText(self.action.params)
         self.color_button.set_color(self.action.color)
         self.confirm_button.clicked.connect(self.set_edit_data)
@@ -196,6 +206,7 @@ class EditActionDialog(ActionDialog):
         self.SIG_edit_action.emit(attributes)
         self.close()
 
+
 class GroupDialog(CoreDialog):
     """GroupWizzard class. Dialog opens when user choses to create new group for actions.
 
@@ -215,8 +226,7 @@ class GroupDialog(CoreDialog):
         self.connections()
         self.resize(300, 50)
 
-        self.attr = ['name']
-
+        self.attr = ["name"]
 
     def init_layout(self) -> None:
         """Initiate all layout for dialog
@@ -270,9 +280,9 @@ class GroupDialog(CoreDialog):
         self.close()
 
     def cancel(self) -> None:
-        """After clicking close button dialog closes.
-        """
+        """After clicking close button dialog closes."""
         self.close()
+
 
 class ErrorDialog(CoreDialog):
     def __init__(self, exctype, value, traceback, traceback_string):
@@ -325,7 +335,7 @@ class DiffDialog(CoreDialog):
             None
         """
         self.scroll_area = QtWidgets.QScrollArea()
-        self.tree_view = QtWidgets.QTreeWidget()        
+        self.tree_view = QtWidgets.QTreeWidget()
         self.confirm_button = QtWidgets.QPushButton("Create")
         self.cancel_button = QtWidgets.QPushButton("Cancel")
         self.button_line_layout.addWidget(self.confirm_button)
@@ -352,6 +362,7 @@ class CustomActorTime(CoreDialog):
     Args:
         actor (Actor): clicked actor
     """
+
     def __init__(self, parent, attributes: dict) -> None:
         super().__init__(parent)
         self.attributes = attributes
@@ -426,8 +437,7 @@ class CustomActorTime(CoreDialog):
         self.time_distance_line.textEdited.connect(self.set_stop_time)
 
     def cancel(self) -> None:
-        """Closes dialog
-        """
+        """Closes dialog"""
         self.closed = True
         self.close()
 
@@ -440,8 +450,7 @@ class CustomActorTime(CoreDialog):
         """
         if self.stop_line.text() == "" or self.start_line.text() == "":
             return
-        time_distance = abs(int(self.stop_line.text()) -
-                            int(self.start_line.text()))
+        time_distance = abs(int(self.stop_line.text()) - int(self.start_line.text()))
         self.time_distance_line.setText(str(time_distance))
 
     def set_stop_time(self, time: str) -> None:
@@ -455,8 +464,9 @@ class CustomActorTime(CoreDialog):
         if time == "" or self.start_line.text() == "":
             return
         self.start_line.text()
-        stop_time = abs(int(self.start_line.text()) +
-                        int(self.time_distance_line.text()))
+        stop_time = abs(
+            int(self.start_line.text()) + int(self.time_distance_line.text())
+        )
         self.stop_line.setText(str(stop_time))
 
     def set_time(self):
@@ -466,15 +476,15 @@ class CustomActorTime(CoreDialog):
         self.attributes["start"] = int(self.start_line.text())
         self.attributes["stop"] = int(self.stop_line.text())
         self.attributes["duration"] = int(self.time_distance_line.text())
-        self.attributes["execution_time"] = int(self.execution_line.text())
+        self.attributes["execution_time"] = float(self.execution_line.text())
 
         self.close()
 
     def read_values(self) -> None:
-        """Reads start and stop positions of actor to initially fill text fields
-        """
+        """Reads start and stop positions of actor to initially fill text fields"""
         self.start_line.setText(str(self.attributes["start"]))
         self.stop_line.setText(str(self.attributes["stop"]))
         self.time_distance_line.setText(
-            str(self.attributes["start"] - self.attributes["stop"]))
-        self.execution_line.setText(str(self.attributes['execution_time']))
+            str(self.attributes["start"] - self.attributes["stop"])
+        )
+        self.execution_line.setText(str(self.attributes["execution_time"]))
