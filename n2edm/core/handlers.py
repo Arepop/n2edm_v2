@@ -97,9 +97,9 @@ class ActionHandler(Handler, IActionHandler):
             return None
 
         for lower in obj.all():
-            # print(lower)
-            if lower.position > obj.position:
-                lower.position -= 1
+            if lower.position != None:
+                if lower.position > obj.position:
+                    lower.position -= 1
         Handler.current_position -= 1
 
     @classmethod
@@ -244,11 +244,7 @@ class SequenceHandler:
             if line[0] != h:
                 llist.append("SLEEP" + " " + str(line[0] - int(h)) + "\n")
                 h = line[0]
-
-            if str(line[2]) == None:
-                llist.append(str(line[1]) + "\n")
-            else:
-                llist.append(str(line[1]) + " " + str(line[2]) + "\n")
+            llist.append(str(line[1]) + " " + str(line[2]) + "\n")
         rv_list = [str(_[1]) + "\n" for _ in commands_list]
         return llist
 
