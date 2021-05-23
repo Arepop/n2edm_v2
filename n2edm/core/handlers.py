@@ -234,12 +234,22 @@ class SequenceHandler:
         commands_list = []
         llist = []
         for actor in ActorObject.all():
-            commands_list.append((actor.start, actor.action.start_cmd, actor.params))
-            commands_list.append((actor.stop, actor.action.stop_cmd, actor.params))
+            commands_list.append(
+                (
+                    actor.start,
+                    actor.action.start_cmd,
+                    actor.params,
+                    actor.execution_time,
+                )
+            )
+            commands_list.append(
+                (actor.stop, actor.action.stop_cmd, actor.params, actor.execution_time)
+            )
 
         commands_list.sort(key=self.sort_criteria)
         h = commands_list[0][0]
-        llist.append("SLEEP:" + " " + str(h) + "\n")
+        print("somethin")
+        llist.append("SLEEP" + " " + str(h) + "\n")
         for line in commands_list:
             if line[0] != h:
                 llist.append("SLEEP" + " " + str(line[0] - int(h)) + "\n")
@@ -249,6 +259,8 @@ class SequenceHandler:
         return llist
 
     def sort_criteria(self, command):
+        print(command[3])
+        # TODO: set sort criteria to command[3]
         return command[0]
 
     def update_sequence(self):

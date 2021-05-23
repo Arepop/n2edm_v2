@@ -238,6 +238,7 @@ class ActorObject(Object, IActorObject):
         self.annotate = None
         self.text = None
         self.position = None
+        self.execution_time = None
         super().__init__(*args, **kwargs)
 
     @property
