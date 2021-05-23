@@ -1,5 +1,6 @@
 from ..abstract.handlers import *
 from .objects import *
+from time import time
 
 
 class Handler(IHandler):
@@ -234,6 +235,7 @@ class SequenceHandler:
         commands_list = []
         llist = []
         for actor in ActorObject.all():
+            # actor.execution_time = time()
             commands_list.append(
                 (
                     actor.start,
@@ -248,7 +250,6 @@ class SequenceHandler:
 
         commands_list.sort(key=self.sort_criteria)
         h = commands_list[0][0]
-        print("somethin")
         llist.append("SLEEP" + " " + str(h) + "\n")
         for line in commands_list:
             if line[0] != h:
@@ -259,7 +260,6 @@ class SequenceHandler:
         return llist
 
     def sort_criteria(self, command):
-        print(command[3])
         # TODO: set sort criteria to command[3]
         return command[0]
 

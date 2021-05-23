@@ -35,6 +35,7 @@ class Actor(models.Model):
     annotate = models.TextField()
     text = models.TextField()
     position = models.IntegerField(default=0)
+    execution_time = models.FloatField()
 
 
 class TimelineActor(models.Model):

@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patheffects as mpe
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from time import time
 
 sys.dont_write_bytecode = True
 os.environ["DJANGO_SETTINGS_MODULE"] = "n2edm.settings"
@@ -125,6 +126,7 @@ class Scheduler(SchedulerView):
             "annotate": action.name,
             "text": action.name,
             "position": action.position,
+            "execution_time": time(),
         }
 
         custom_dialog = CustomActorTime(self, attributes)
@@ -149,6 +151,7 @@ class Scheduler(SchedulerView):
             "annotate": action.name,
             "text": action.name,
             "position": action.position,
+            "execution_time": time(),
         }
 
         # creating actor

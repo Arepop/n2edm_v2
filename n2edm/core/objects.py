@@ -1,5 +1,6 @@
 from ..abstract.objects import *
 from ..models.models import *
+from time import time
 
 
 class Object(IObject):
@@ -312,6 +313,14 @@ class ActorObject(Object, IActorObject):
     @position.setter
     def position(self, position):
         self._position = position
+
+    @property
+    def execution_time(self):
+        return self._execution_time
+
+    @execution_time.setter
+    def execution_time(self, execution_time):
+        self._execution_time = execution_time
 
 
 class TimelineObject(Object, ITimelineObject):
