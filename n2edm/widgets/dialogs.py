@@ -369,10 +369,12 @@ class CustomActorTime(CoreDialog):
             None
         """
         self.layout = QtWidgets.QVBoxLayout()
+        self.execution_layout = QtWidgets.QHBoxLayout()
         self.start_layout = QtWidgets.QHBoxLayout()
         self.stop_layout = QtWidgets.QHBoxLayout()
         self.time_distance_layout = QtWidgets.QHBoxLayout()
         self.button_line_layout = QtWidgets.QHBoxLayout()
+        self.layout.addLayout(self.execution_layout)
         self.layout.addLayout(self.start_layout)
         self.layout.addLayout(self.stop_layout)
         self.layout.addLayout(self.time_distance_layout)
@@ -385,6 +387,10 @@ class CustomActorTime(CoreDialog):
         Returns:
             None
         """
+        self.execution_label = QtWidgets.QLabel("Execution time")
+        self.execution_line = QtWidgets.QLineEdit()
+        self.execution_layout.addWidget(self.execution_label)
+        self.execution_layout.addWidget(self.execution_line)
         self.start_label = QtWidgets.QLabel("Start time")
         self.start_line = QtWidgets.QLineEdit()
         self.start_layout.addWidget(self.start_label)
@@ -460,6 +466,7 @@ class CustomActorTime(CoreDialog):
         self.attributes["start"] = int(self.start_line.text())
         self.attributes["stop"] = int(self.stop_line.text())
         self.attributes["duration"] = int(self.time_distance_line.text())
+        self.attributes["execution_time"] = int(self.execution_line.text())
 
         self.close()
 
@@ -470,4 +477,4 @@ class CustomActorTime(CoreDialog):
         self.stop_line.setText(str(self.attributes["stop"]))
         self.time_distance_line.setText(
             str(self.attributes["start"] - self.attributes["stop"]))
-
+        self.execution_line.setText(str(self.attributes['execution_time']))
