@@ -41,5 +41,15 @@ class TimelineActor(models.Model):
     set_id = models.TextField(default=0)
 
 
-class InfinityActor(models.Model):
+class InfinitActor(models.Model):
     set_id = models.TextField(default=0)
+    name = models.TextField()
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True)
+    action = models.ForeignKey(Action, on_delete=models.CASCADE)
+    params = models.TextField()
+    color = models.TextField()
+    start = models.IntegerField()
+    stop = models.IntegerField()
+    annotate = models.TextField()
+    text = models.TextField()
+    position = models.IntegerField(default=0)

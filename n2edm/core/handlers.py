@@ -124,9 +124,6 @@ class ActorHandler(Handler, IActorHandler):
     def __call__(self, obj):
         return self.check(obj)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     @classmethod
     def swap_position(cls, obj1, obj2):
         temp = obj1.position
@@ -157,7 +154,7 @@ class ActorHandler(Handler, IActorHandler):
     @classmethod
     def calculate_horizontal_position(cls, obj):
         maximum_position = 0
-        if obj.stop != 0:
+        if obj.stop != None:
             return maximum_position
         if obj.action.group == None:
             maximum_position = max(
@@ -196,37 +193,66 @@ class ActorHandler(Handler, IActorHandler):
 class InfinitActorHandler(Handler, IInfinitActorHandler):
     object_ = InfinitActorObject
 
-    def __call__(self, obj):
-        return self.check(obj)
-
-    def check_infinit(cls, obj):
-        for old_obj in cls.object_.filter(group=obj.group):
-
-            if old_obj is type(InfinitActorObject):
-                return True
-            else:
-                return False
-
-    @classmethod
-    def fit_check(cls, obj):
-
-        for old_obj in cls.object_.filter(group=obj.group):
-            if old_obj.start == obj.start:
-                raise ValueError("You can't create infinity actor with this start")
-
-        return True
-
-    @classmethod
-    def cut_infinit_actor(cls, obj):
-        cls.check(obj)
-        for old_obj in cls.object_.filter(group=obj.group):
-            if old_obj.start <= obj.start:
-                old_obj.stop = obj.start
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.object_.handler = self
 
     @classmethod
     def check(cls, obj):
-        cls.check_unique(obj)
-        cls.fit_check(obj)
+        cls.calculate_horizontal_position(obj)
+        cls.time_check(obj)
+        cls.set_position(obj)
+        return True
+
+    def __call__(self, obj):
+        return self.check(obj)
+
+    @classmethod
+    def swap_position(cls, obj1, obj2):
+        temp = obj1.position
+        obj1.position = obj2.position
+        obj2.postion = temp
+
+    @classmethod
+    def time_check(cls, obj):
+        if obj.stop == 0 and obj.stop == 0:
+            return
+
+        important_objects = (
+            obj.filter(group=obj.group) if obj.group else obj.filter(action=obj.action)
+        )
+
+        for old_obj in important_objects:
+            if old_obj == obj:
+                continue
+
+            elif (
+                (obj.start >= old_obj.start and obj.start < old_obj.stop)
+            ):
+                raise ValueError("Time already in use!")
+
+    @classmethod
+    def calculate_horizontal_position(cls, obj):
+        return None
+
+    @classmethod
+    def set_position(cls, obj):
+        if obj.action.position == None:
+            ActionHandler.set_position(obj)
+            obj.position = obj.action.position
+        else:
+            obj.position = obj.action.position
+
+    @classmethod
+    def free_position(cls, obj):
+        if list(obj.action.children):
+            return
+        ActionHandler.free_position(obj.action)
+
+        if obj.group:
+            pass 
+        else:
+            pass
 
 
 class SequenceHandler:

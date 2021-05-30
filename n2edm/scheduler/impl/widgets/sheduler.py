@@ -1,6 +1,3 @@
-import sys
-import os
-import django
 from typing import Any
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -10,10 +7,6 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from time import time
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import pyqtSignal as Signal
-
-sys.dont_write_bytecode = True
-os.environ["DJANGO_SETTINGS_MODULE"] = "n2edm.settings"
-django.setup()
 
 from ....widgets.views import SchedulerView
 from ....core.objects import *
@@ -44,8 +37,10 @@ class Scheduler(SchedulerView):
         WIDTH = 2 * bbox.height
         outline = mpe.withStroke(linewidth=1.1, capstyle="butt")
 
+        stop = 99999 if actor.stop == None else actor.stop
+
         (line2d,) = self.ax.plot(
-            [actor.start, actor.stop],
+            [actor.start, stop],
             [actor.position, actor.position],
             lw=WIDTH,
             color=actor.color,
@@ -108,20 +103,14 @@ class Scheduler(SchedulerView):
         self.figure.tight_layout()
         self.canvas.draw()
 
-    def update_canvas(self):
-        for actor in ActorObject.all():
-            self.canvas.draw()
-
     def create_custom_actor(self, action):
         # attributes for actor to create
         attributes = {
             "name": action.name,
             "group": action.group,
             "action": action,
-            "execution_time": 0,
             "start": 0,
-            "stop": 0,
-            "duration": action.duration,
+            "stop": None,
             "color": action.color,
             "params": action.params,
             "annotate": action.name,
@@ -134,8 +123,10 @@ class Scheduler(SchedulerView):
         custom_dialog.exec()
 
         # creating actor
-        actor = ActorObject.create(**attributes)
-        # print(vars(actor))
+        if action.duration != 0:
+            actor = ActorObject.create(**attributes)
+        else:
+            actor = InfinitActorObject.create(**attributes)
         self.draw_actor(actor)
 
     def create_actor(self, action):
@@ -143,10 +134,8 @@ class Scheduler(SchedulerView):
             "name": action.name,
             "group": action.group,
             "action": action,
-            "execution_time": 0,
             "start": 0,
-            "stop": 0,
-            "duration": action.duration,
+            "stop": None,
             "color": action.color,
             "params": action.params,
             "annotate": action.name,
@@ -156,7 +145,10 @@ class Scheduler(SchedulerView):
         }
 
         # creating actor
-        actor = ActorObject.create(**attributes)
+        if action.duration != 0:
+            actor = ActorObject.create(**attributes)
+        else:
+            actor = InfinitActorObject.create(**attributes)
         self.draw_actor(actor)
 
     def object_deleted(self, obj):
@@ -177,7 +169,9 @@ class Scheduler(SchedulerView):
 
     def update_line2d_position(self):
         for actor, artist in self.actor_and_artist.items():
+            stop = actor.stop if actor.stop != None else 99999
             artist.set_ydata([actor.position, actor.position])
+            artist.set_xdata([actor.start, stop])
 
 
     def pick_event(self, event: Any) -> None:
@@ -191,7 +185,8 @@ class Scheduler(SchedulerView):
         if event.mouseevent.button == "LEFT" or event.artist == None:
             return
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(lambda point: self.context_menu_event(point, event))
+        self.customContextMenuRequested.connect(
+            lambda point: self.context_menu_event(point, event))
 
     def context_menu_event(self, point, event):
         self.menu = QtWidgets.QMenu(self)
@@ -228,4 +223,7 @@ class Scheduler(SchedulerView):
                     custom_dialog = EditActorTime(self, attributes)
                     custom_dialog.exec()
                     actor.update(**attributes)
+                    self.update_line2d_position()
+                    self.canvas.draw()
+                    break
                     

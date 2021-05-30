@@ -481,8 +481,8 @@ class CustomActorTime(CoreDialog):
         Handles errors in time flow.
         """
         self.attributes["start"] = int(self.start_line.text())
-        self.attributes["stop"] = int(self.stop_line.text())
-        self.attributes["duration"] = int(self.time_distance_line.text())
+        if self.attributes["stop"] != None:
+            self.attributes["stop"] = int(self.stop_line.text())
         for sequence, button in self.sequence_buttons.items():
             if button.isChecked():
                 self.attributes['sequence'] = sequence
@@ -493,15 +493,21 @@ class CustomActorTime(CoreDialog):
 
     def read_values(self) -> None:
         """Reads start and stop positions of actor to initially fill text fields"""
+        if self.attributes["stop"] == None:
+            self.stop_line.setEnabled(False)
+            self.time_distance_line.setEnabled(False)
+            self.stop_line.setText(str(0))
+            self.time_distance_line.setText(str(0))
+        else:
+            self.stop_line.setText(str(self.attributes["stop"]))
+            self.time_distance_line.setText(
+                str(self.attributes["stop"] - self.attributes["start"])
+            )
         self.start_line.setText(str(self.attributes["start"]))
-        self.stop_line.setText(str(self.attributes["stop"]))
-        self.time_distance_line.setText(
-            str(self.attributes["start"] - self.attributes["stop"])
-        )
+            
         # self.execution_line.setText(str(self.attributes["execution_time"]))
 
 
 class EditActorTime(CustomActorTime):
     def __init__(self, parent, attributes: object) -> None:
         super().__init__(parent, attributes)
-    

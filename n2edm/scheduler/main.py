@@ -3,6 +3,11 @@ import os
 import traceback as trs
 import logging
 from datetime import datetime
+import django
+
+sys.dont_write_bytecode = True
+os.environ["DJANGO_SETTINGS_MODULE"] = "n2edm.settings"
+django.setup()
 
 from .impl.widgets.base import Base
 from ..widgets.dialogs import ErrorDialog

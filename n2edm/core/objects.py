@@ -85,7 +85,6 @@ class Object(IObject):
         rv_dict = {}
         for key, value in vars(self).items():
             rv_dict[key[1:]] = value
-        rv_dict["set_id"] = self.set_id 
         return rv_dict
 
     @classmethod
@@ -333,21 +332,25 @@ class ActorObject(Object, IActorObject):
     def sequence(self, sequence):
         self._sequence = sequence
 
-class TimelineObject(Object, ITimelineObject):
-    def __init__(self, name):
-        super().__init__(name)
-
+# class TimelineObject(Object, IActorObject):
+#     def __init__(self, name):
+#         super().__init__(name)
 
 class InfinitActorObject(Object, IInfinitActorObject):
+
+    model = InfinitActor
+
     def __init__(self, *args, **kwargs):
         self.group = None
         self.action = None
         self.color = None
         self.params = None
         self.start = None
-        self.stop = None
         self.annotate = None
         self.text = None
+        self.position = None
+        self.execution_time = None
+        self.sequence = "main"
         super().__init__(*args, **kwargs)
 
     @property
@@ -392,11 +395,11 @@ class InfinitActorObject(Object, IInfinitActorObject):
 
     @property
     def stop(self):
-        return self._stop
+        return None
 
     @stop.setter
     def stop(self, stop):
-        self._stop = stop
+        self._stop = None
 
     @property
     def annotate(self):
@@ -413,3 +416,27 @@ class InfinitActorObject(Object, IInfinitActorObject):
     @text.setter
     def text(self, text):
         self._text = text
+
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, position):
+        self._position = position
+
+    @property
+    def execution_time(self):
+        return self._execution_time
+
+    @execution_time.setter
+    def execution_time(self, execution_time):
+        self._execution_time = execution_time
+
+    @property
+    def sequence(self):
+        return self._sequence
+
+    @sequence.setter
+    def sequence(self, sequence):
+        self._sequence = sequence

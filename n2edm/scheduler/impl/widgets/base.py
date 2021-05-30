@@ -5,7 +5,7 @@ from .actions import Actions
 
 from ....sync_provider.provider import SyncProvider
 from ....widgets.views import BaseView
-from ....core.handlers import ActionHandler, GroupHandler, ActorHandler, SequenceHandler
+from ....core.handlers import ActionHandler, GroupHandler, ActorHandler, InfinitActorHandler, SequenceHandler
 
 
 class Base(BaseView):
@@ -15,6 +15,7 @@ class Base(BaseView):
         self.actor_handler = ActorHandler()
         self.action_handler = ActionHandler()
         self.group_handler = GroupHandler()
+        self.infinit_actor_handler = InfinitActorHandler()
         self.sequence_handler = SequenceHandler("sequence")
 
         self.create_view()
