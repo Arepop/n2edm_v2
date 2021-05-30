@@ -1,6 +1,5 @@
 from ..abstract.objects import *
 from ..models.models import *
-from time import time
 
 
 class Object(IObject):
@@ -9,7 +8,6 @@ class Object(IObject):
     set_id = None
     objects = []
     deleted_objects = []
-    max_pos = 0
     handler = None
 
     def __init__(self, *args, **kwargs):
@@ -80,9 +78,15 @@ class Object(IObject):
         return self  # if check else None
 
     def delete(self):
-        # self.handler.free_position(self)
         self.objects.pop(self.objects.index(self))
         self.deleted_objects.append(self)
+
+    def as_dict(self):
+        rv_dict = {}
+        for key, value in vars(self).items():
+            rv_dict[key[1:]] = value
+        rv_dict["set_id"] = self.set_id 
+        return rv_dict
 
     @classmethod
     def all(cls):
@@ -150,11 +154,9 @@ class GroupObject(Object, IGroupObject):
             child.position = self.position
 
     def delete(self):
-        self.handler.free_position(self)
-
         for child in reversed(list(self.children)):
             child.delete()
-
+        self.position = None
         super().delete()
 
 
@@ -240,6 +242,7 @@ class ActorObject(Object, IActorObject):
         self.text = None
         self.position = None
         self.execution_time = None
+        self.sequence = "main"
         super().__init__(*args, **kwargs)
 
     @property
@@ -322,6 +325,13 @@ class ActorObject(Object, IActorObject):
     def execution_time(self, execution_time):
         self._execution_time = execution_time
 
+    @property
+    def sequence(self):
+        return self._sequence
+
+    @sequence.setter
+    def sequence(self, sequence):
+        self._sequence = sequence
 
 class TimelineObject(Object, ITimelineObject):
     def __init__(self, name):

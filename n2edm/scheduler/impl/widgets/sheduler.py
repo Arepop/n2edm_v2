@@ -8,6 +8,8 @@ import matplotlib.patheffects as mpe
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from time import time
+from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtCore import pyqtSignal as Signal
 
 sys.dont_write_bytecode = True
 os.environ["DJANGO_SETTINGS_MODULE"] = "n2edm.settings"
@@ -16,11 +18,12 @@ django.setup()
 from ....widgets.views import SchedulerView
 from ....core.objects import *
 from ....core.handlers import *
-from ....widgets.dialogs import CustomActorTime
+from ....widgets.dialogs import CustomActorTime, EditActionDialog, EditActorTime
 
 
 class Scheduler(SchedulerView):
 
+    SIG_edit_actor = Signal(object)
     actor_and_artist = {}
 
     def __init__(self, parent: Any) -> None:
@@ -31,8 +34,6 @@ class Scheduler(SchedulerView):
 
         self.event = None
         self.pick_event = self.canvas.mpl_connect("pick_event", self.pick_event)
-        self.button_press_event = self.canvas.mpl_connect(
-            "button_press_event", self.lmb_double_click)
         self.motion_notify_event = self.canvas.mpl_connect(
             "motion_notify_event", self.on_hover)
 
@@ -159,12 +160,16 @@ class Scheduler(SchedulerView):
         self.draw_actor(actor)
 
     def object_deleted(self, obj):
-        for actor, artist in self.actor_and_artist.items():
-            if actor in Object.deleted_objects:
-                try:
-                    artist.remove()
-                except ValueError:
-                    continue
+        if type(obj) == ActorObject:
+            obj.delete()
+            ActorHandler.free_position(obj)
+        else:
+            for actor, artist in self.actor_and_artist.items():
+                if actor in Object.deleted_objects:
+                    try:
+                        artist.remove()
+                    except ValueError:
+                        continue
 
         self.update_line2d_position()
 
@@ -181,29 +186,25 @@ class Scheduler(SchedulerView):
         Args:
             event (MouseEvent): Mouse click event
         """
-        self.event = event
-            
-    def contextMenuEvent(self, event: Any) -> None:
-        """Context menu for actors
 
-        Args:
-            event (event): Mouse rbm click event
+        if event == None: return
+        if event.mouseevent.button == "LEFT" or event.artist == None:
+            return
+        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(lambda point: self.context_menu_event(point, event))
 
-        """
+    def context_menu_event(self, point, event):
         self.menu = QtWidgets.QMenu(self)
         del_action = QtWidgets.QAction("Delete...", self)
+        edit_action = QtWidgets.QAction("Edit...", self)
         del_action.triggered.connect(
-            lambda: self.delete_actor(self.artist))
+            lambda: self.delete_actor(event.artist))
+        edit_action.triggered.connect( 
+            lambda: self.SIG_edit_actor.emit(event.artist))
+        self.menu.addAction(edit_action)
         self.menu.addAction(del_action)
-        self.menu.popup(QtGui.QCursor.pos())
-
-    def lmb_double_click(self, event: Any) -> None:
-        """Opens time wizzard window after db click on actor
-
-        Args:
-            event (event): Mouse db click event
-        """
-        pass
+        self.menu.exec_(self.mapToGlobal(point))
+        self.customContextMenuRequested.disconnect()
 
     def on_hover(self, event: Any) -> None:
         """Handles hover events and annotations in schedule
@@ -217,7 +218,14 @@ class Scheduler(SchedulerView):
     def delete_actor(self, picked_line2d):
         for actor, line2d in self.actor_and_artist.items():
             if picked_line2d == line2d:
-                actor.delete()
+                picked_line2d.remove()
                 self.object_deleted(actor)
 
-    
+    def edit_actor(self, picked_line2d):
+        for actor, line2d in self.actor_and_artist.items():
+            if picked_line2d == line2d:
+                    attributes = actor.as_dict()
+                    custom_dialog = EditActorTime(self, attributes)
+                    custom_dialog.exec()
+                    actor.update(**attributes)
+                    

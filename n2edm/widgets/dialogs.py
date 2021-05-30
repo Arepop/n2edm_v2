@@ -1,5 +1,6 @@
 from PyQt5 import Qt, QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal as Signal
+from django.db.models.fields import IntegerField
 
 from .helpers import colorQPushButton
 
@@ -380,15 +381,17 @@ class CustomActorTime(CoreDialog):
             None
         """
         self.layout = QtWidgets.QVBoxLayout()
-        self.execution_layout = QtWidgets.QHBoxLayout()
+        self.sequence_layout = QtWidgets.QHBoxLayout()
+        self.sequence_vlayout = QtWidgets.QVBoxLayout()
         self.start_layout = QtWidgets.QHBoxLayout()
         self.stop_layout = QtWidgets.QHBoxLayout()
         self.time_distance_layout = QtWidgets.QHBoxLayout()
         self.button_line_layout = QtWidgets.QHBoxLayout()
-        self.layout.addLayout(self.execution_layout)
+        self.sequence_layout.addLayout(self.sequence_vlayout)
         self.layout.addLayout(self.start_layout)
         self.layout.addLayout(self.stop_layout)
         self.layout.addLayout(self.time_distance_layout)
+        self.layout.addLayout(self.sequence_layout) 
         self.layout.addLayout(self.button_line_layout)
         self.setLayout(self.layout)
 
@@ -398,10 +401,14 @@ class CustomActorTime(CoreDialog):
         Returns:
             None
         """
-        self.execution_label = QtWidgets.QLabel("Execution time")
-        self.execution_line = QtWidgets.QLineEdit()
-        self.execution_layout.addWidget(self.execution_label)
-        self.execution_layout.addWidget(self.execution_line)
+        self.sequence_label = QtWidgets.QLabel("Actor seqence")
+        self.sequence_buttons = {"pre": QtWidgets.QRadioButton("pre_sequence"), 
+                                 "main":  QtWidgets.QRadioButton("main_sequence"), 
+                                 "post": QtWidgets.QRadioButton("post_sequence")}
+        self.sequence_buttons['main'].setChecked(True)
+        self.sequence_layout.addWidget(self.sequence_label)
+        for button in self.sequence_buttons.values():
+            self.sequence_layout.addWidget(button)
         self.start_label = QtWidgets.QLabel("Start time")
         self.start_line = QtWidgets.QLineEdit()
         self.start_layout.addWidget(self.start_label)
@@ -476,7 +483,11 @@ class CustomActorTime(CoreDialog):
         self.attributes["start"] = int(self.start_line.text())
         self.attributes["stop"] = int(self.stop_line.text())
         self.attributes["duration"] = int(self.time_distance_line.text())
-        self.attributes["execution_time"] = float(self.execution_line.text())
+        for sequence, button in self.sequence_buttons.items():
+            if button.isChecked():
+                self.attributes['sequence'] = sequence
+                break
+        # self.attributes["execution_time"] = float(self.execution_line.text())
 
         self.close()
 
@@ -487,4 +498,10 @@ class CustomActorTime(CoreDialog):
         self.time_distance_line.setText(
             str(self.attributes["start"] - self.attributes["stop"])
         )
-        self.execution_line.setText(str(self.attributes["execution_time"]))
+        # self.execution_line.setText(str(self.attributes["execution_time"]))
+
+
+class EditActorTime(CustomActorTime):
+    def __init__(self, parent, attributes: object) -> None:
+        super().__init__(parent, attributes)
+    

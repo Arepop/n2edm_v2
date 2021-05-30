@@ -1,6 +1,5 @@
 from ..abstract.handlers import *
 from .objects import *
-from time import time
 
 
 class Handler(IHandler):
@@ -58,8 +57,8 @@ class GroupHandler(Handler, IGroupHandler):
         for child in obj.group.children:
             child.position = obj.group.position
 
-    def free_position(self, obj):
-
+    @classmethod
+    def free_position(cls, obj):
         for lower in obj.all():
 
             if lower.position > obj.position:
@@ -92,11 +91,8 @@ class ActionHandler(Handler, IActionHandler):
         else:
             GroupHandler.set_position(obj)
 
-    def free_position(self, obj):
-
-        if len(list(obj.children)) == 0:
-            return None
-
+    @classmethod
+    def free_position(cls, obj):
         for lower in obj.all():
             if lower.position != None:
                 if lower.position > obj.position:
@@ -185,8 +181,16 @@ class ActorHandler(Handler, IActorHandler):
         else:
             obj.position = obj.action.position
 
-    def free_position(self, obj):
-        pass
+    @classmethod
+    def free_position(cls, obj):
+        if list(obj.action.children):
+            return
+        ActionHandler.free_position(obj.action)
+
+        if obj.group:
+            pass 
+        else:
+            pass
 
 
 class InfinitActorHandler(Handler, IInfinitActorHandler):

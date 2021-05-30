@@ -36,6 +36,7 @@ class Base(BaseView):
         self.pull_action.triggered.connect(self.actions.tree.sync_with_db)
         self.create_sequence.triggered.connect(self.sequence_handler.update_sequence)
         self.actions.tree.SIG_object_deleted.connect(self.scheduler.object_deleted)
+        self.scheduler.SIG_edit_actor.connect(self.scheduler.edit_actor)
             
     def create_menu_bar(self) -> None:
         """Initiate menu bar for main window with signals (menu actions) connections to functions in widgets

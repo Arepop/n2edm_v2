@@ -105,8 +105,10 @@ class Tree(TreeView):
             item.delete()
         if type(item) == ActionObject:
             self.model.remove_action(item, model_index)
+            ActionHandler.free_position(item)
         else:
             self.model.remove_group(item, model_index)
+            GroupHandler.free_position(item)
         self.SIG_object_deleted.emit(item)
 
     def search(self, search_str: str) -> None:
