@@ -1,2 +1,2 @@
 # n2edm_v2
-Von Braun był super gość
+The second version of scheduler with proper implementation.
